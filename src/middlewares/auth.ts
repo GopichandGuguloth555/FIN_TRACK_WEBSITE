@@ -1,34 +1,32 @@
 import { Request, Response, NextFunction } from "express";
-import jwt, { JwtPayload } from "jsonwebtoken";
+import jwt from "jsonwebtoken";
+import { UserModel } from "../models/User";
+import { BlacklistModel } from "../models/blacklist";
+
 import dotenv from "dotenv";
 dotenv.config();
-
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-interface AuthenticatedRequest extends Request {
-    user?: string | JwtPayload;
-}
+export const userAuth = async (req: Request, res: Response, next: NextFunction) => {
+    try 
+    {
+        const token = req.header("Authorization")?.replace("Bearer ", "");
+        if (!token) return res.status(401).json({ message: "Auth token missing!" });
 
-export const userAuth = (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    try {
-        const authHeader = req.headers.authorization;
+        const blacklisted = await BlacklistModel.findOne({ token });
+        if (blacklisted) return res.status(401).json({ message: "Token is invalid (logged out)" });
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ message: "Access denied. No token provided." });
-        }
+        const decoded = jwt.verify(token, JWT_SECRET) as { id: string };
+        const user = await UserModel.findById(decoded.id);
 
-        const token = authHeader.split(" ")[1];
+        if (!user) return res.status(404).json({ message: "User not found!" });
 
-        const decoded = jwt.verify(token, JWT_SECRET);
-
-        req.user = decoded;
-
+        //@ts-ignore
+        req.user = { id: user._id, userName: user.userName };
         next();
     }
-    catch (error) {
-        return res.status(403).json({
-            message: "Invalid or expired token",
-            error: (error as Error).message,
-        });
+    catch (error) 
+    {
+        res.status(401).json({ message: "Invalid or expired token!" });
     }
 };
