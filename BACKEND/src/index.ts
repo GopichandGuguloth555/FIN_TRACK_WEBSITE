@@ -3,6 +3,7 @@ import { connectDB } from "./db";
 import userRoutes from "./routes/userIndex";
 import transactionRoutes from "./routes/transaction"
 import budgetRoutes from "./routes/budjet";
+import analyticRoutes from "./routes/analysis"
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -15,6 +16,7 @@ connectDB();
 app.use("/user", userRoutes);
 app.use("/transactions",transactionRoutes);
 app.use("/budget",budgetRoutes);
+app.use("/analytics",analyticRoutes);
 
 app.get("/", (req, res) => {
   res.send("🚀 Welcome to Fin_Track Backend API!");
