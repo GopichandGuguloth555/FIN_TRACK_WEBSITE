@@ -4,15 +4,43 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { userAuth } from "../middlewares/auth";
 import { BlacklistModel } from "../models/blacklist";
+import { z } from "zod";
+
 
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 const router = express.Router();
 
+
+const signupSchema = z.object({
+  userName: z
+    .string()
+    .min(3, { message: "Username must be at least 3 characters long" })
+    .max(20, { message: "Username cannot exceed 20 characters" })
+    .trim(),
+  password: z
+    .string()
+    .min(6, { message: "Password must be at least 6 characters long" }),
+});
+
+const loginSchema = z.object({
+  userName: z.string().nonempty("Username is required"),
+  password: z.string().nonempty("Password is required"),
+});
+
 router.post("/signup", async (req, res) => {
   try {
-    const { userName, password } = req.body;
+    
+    const result = signupSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: result.error.flatten().fieldErrors,
+      });
+    }
+
+    const { userName, password } = result.data;
 
     const existingUser = await UserModel.findOne({ userName });
     if (existingUser) {
@@ -35,15 +63,28 @@ router.post("/signup", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   try {
-    const { userName, password } = req.body;
+    
+    const result = loginSchema.safeParse(req.body);
+    if (!result.success) {
+      return res.status(400).json({
+        message: "Validation failed",
+        errors: result.error.flatten().fieldErrors,
+      });
+    }
+
+    const { userName, password } = result.data;
 
     const existingUser = await UserModel.findOne({ userName });
     if (!existingUser) {
-      return res.status(400).json({ message: "Invalid Credentials! (User not found)" });
+      return res
+        .status(400)
+        .json({ message: "Invalid Credentials! (User not found)" });
     }
 
     if (existingUser.password !== password) {
-      return res.status(400).json({ message: "Invalid Credentials! (Wrong password)" });
+      return res
+        .status(400)
+        .json({ message: "Invalid Credentials! (Wrong password)" });
     }
 
     const token = jwt.sign(
@@ -64,6 +105,8 @@ router.post("/login", async (req, res) => {
     });
   }
 });
+
+
 
 router.put("/profile", userAuth, async (req, res) => {
 
