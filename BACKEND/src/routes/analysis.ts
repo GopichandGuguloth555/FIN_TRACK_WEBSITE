@@ -140,4 +140,40 @@ router.get("/insights", userAuth, async (req, res) => {
             res.status(500).json({ message: "Server error while fetching insights" });
         }
 });
+
+router.get("/stats/monthly", userAuth, async (req, res) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.id;
+
+    const stats = await TransactionModel.aggregate([
+      { $match: { userId } },
+      {
+        $group: {
+          _id: { $substr: ["$date", 0, 7] },
+          totalIncome: {
+            $sum: {
+              $cond: [{ $eq: ["$type", "income"] }, "$amount", 0],
+            },
+          },
+          totalExpense: {
+            $sum: {
+              $cond: [{ $eq: ["$type", "expense"] }, "$amount", 0],
+            },
+          },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    res.json({
+      message: "Monthly stats fetched successfully",
+      stats,
+    });
+  } catch (error) {
+    console.error("Error fetching monthly stats:", error);
+    res.status(500).json({ message: "Failed to fetch monthly stats" });
+  }
+});
+
 export default router;

@@ -12,10 +12,17 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@types/json2csv": "^5.0.7",
+    "@types/multer": "^2.0.0",
+    "@types/npm": "^7.19.3",
+    "csv-parser": "^3.2.0",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+    "install": "^0.13.0",
+    "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.3"
+    "mongoose": "^8.19.3",
+    "multer": "^2.0.2"
   },
   "devDependencies": {
     "@types/express": "^5.0.5",
