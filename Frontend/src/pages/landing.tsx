@@ -1,4 +1,5 @@
 import { BarChart3,ArrowRight,TrendingUp,PieChart,FileText,Shield,Smartphone,Zap,CheckCircle2 } from "lucide-react";
+import { Link } from "react-router-dom";
 import React from "react";
 import { useState } from "react";
 
@@ -24,9 +25,9 @@ function App() {
               <a href="#features" className="text-slate-300 hover:text-white transition">Features</a>
               <a href="#how-it-works" className="text-slate-300 hover:text-white transition">How It Works</a>
               <a href="#pricing" className="text-slate-300 hover:text-white transition">Pricing</a>
-              <button className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition font-medium">
+              <Link to={'/login'}><button className="px-6 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition font-medium">
                 Sign In
-              </button>
+              </button></Link>
             </div>
           </div>
         </div>
@@ -53,13 +54,13 @@ function App() {
                 className="w-full sm:flex-1 px-6 py-4 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 transition"
                 required
               />
-              <button
+              <Link to={'/signup'}><button
                 type="submit"
                 className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white rounded-lg font-semibold flex items-center justify-center space-x-2 transition transform hover:scale-105"
               >
                 <span>Get Started Free</span>
                 <ArrowRight className="w-5 h-5" />
-              </button>
+              </button></Link>
             </form>
           </div>
 

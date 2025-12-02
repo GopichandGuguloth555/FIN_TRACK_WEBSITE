@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Signuppage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0e1a29] p-6">
@@ -71,7 +73,7 @@ export default function Signuppage() {
 
             <div className="flex justify-between text-gray-300 text-sm mt-4">
               <span>Already have an account?</span>
-              <a href="/login" className="hover:underline">Log In</a>
+              <Link to="/login" className="hover:underline">Log In</Link>
             </div>
 
           </div>

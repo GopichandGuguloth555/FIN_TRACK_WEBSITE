@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function Loginpage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0e1a29] p-6">
@@ -66,7 +68,7 @@ export default function Loginpage() {
             {/* Links */}
             <div className="flex justify-between text-gray-300 text-sm mt-4">
               <a href="#" className="hover:underline">Forgot Password?</a>
-              <a href="#" className="hover:underline">Sign Up</a>
+              <Link to={'/signup'} className="hover:underline">Sign Up</Link>
             </div>
 
           </div>
