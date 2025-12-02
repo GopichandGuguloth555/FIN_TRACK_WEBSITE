@@ -1,0 +1,50 @@
+Event Listing
+    Show all events happening in the city with image, title, date, location.
+
+Event Details + RSVP (“I’m Going”)
+   When user clicks an event:
+        full details
+        RSVP button
+        event info
+
+Who’s Going (Real-Time)
+    Show the list of people attending the event.
+
+User Login + Profile (My Events)
+        User logs in → sees all events they RSVP’d.
+
+Certificate Feature 
+1. Admin Uploads Certificate Design
+        Admin can upload:
+            A background image (certificate template)
+            A logo/photo
+            A signature
+            Title text like “Certificate of Participation”
+
+2. System Automatically Fills User Name
+        When a user RSVPs or attends the event:
+        Their name is taken from Supabase Auth
+        Placed automatically on the certificate design
+
+3. Admin Can Add Custom Text
+     Admin can set:
+        Event name
+        Participation message
+        Organizer name
+        Date
+        Example:
+        “This certificate is awarded to Gopichand for participating in the Local Tech Meetup 2025.”
+
+4. Download Certificate (PDF/JPG)
+    User clicks Download Certificate →
+        They get a PDF or image with:
+        Their name
+        Event name
+        Admin design
+        Signature
+
+5. Optional: QR Code
+        You can also add a QR code that:
+        Confirms certificate is real
+        Leads to a page showing event + user name
+
