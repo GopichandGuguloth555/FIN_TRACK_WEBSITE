@@ -24,15 +24,12 @@ const signupSchema = z.object({
     .min(6, { message: "Password must be at least 6 characters long" }),
 });
 
-const loginSchema = z.object({
-  userName: z.string().nonempty("Username is required"),
-  password: z.string().nonempty("Password is required"),
-});
+
 
 router.post("/signup", async (req, res) => {
   try {
-    
     const result = signupSchema.safeParse(req.body);
+
     if (!result.success) {
       return res.status(400).json({
         message: "Validation failed",
@@ -48,17 +45,24 @@ router.post("/signup", async (req, res) => {
     }
 
     const newUser = await UserModel.create({ userName, password });
+
     return res.status(201).json({
       message: "User created successfully!",
       user: newUser,
     });
+
   } catch (error) {
     console.error("Error during signup:", error);
-    res.status(500).json({
+    return res.status(500).json({
       message: "Internal server error",
       error: (error as Error).message,
     });
   }
+});
+
+const loginSchema = z.object({
+  userName: z.string().nonempty("Username is required"),
+  password: z.string().nonempty("Password is required"),
 });
 
 router.post("/login", async (req, res) => {
