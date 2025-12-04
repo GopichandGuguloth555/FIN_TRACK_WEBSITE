@@ -1,21 +1,11 @@
-import { Toast } from "./components/ui/toast"
-import { useToast } from "./components/use-toast"
+import DashboardLayout from "./components/DashboardLayout";
 
 function App() {
-  const { toast, showToast } = useToast()
-
   return (
-    <>
-      <button
-        className="bg-black text-white p-3 rounded-md"
-        onClick={() => showToast({ title: "Saved!", description: "Your expense was added." })}
-      >
-        Test Toast
-      </button>
-
-      {toast && <Toast title={toast.title} description={toast.description} />}
-    </>
-  )
+    <DashboardLayout>
+      <h1 className="text-3xl font-semibold mb-6">Dashboard</h1>
+    </DashboardLayout>
+  );
 }
 
-export default App
+export default App;
