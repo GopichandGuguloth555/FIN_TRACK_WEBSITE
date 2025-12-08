@@ -1,80 +1,52 @@
-import { Home, BarChart2, Wallet, Settings, PieChart, ChevronLeft, User, LucideIcon } from "lucide-react";
-import { useState } from "react";
+import {
+  Home,
+  BarChart2,
+  Wallet,
+  User,
+  Settings,
+  Shield,
+  HelpCircle,
+  LucideIcon,
+} from "lucide-react";
+
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 export default function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false);
+  const location = useLocation(); // Detect current URL
 
   return (
-    <div
-      className={cn(
-        "h-screen bg-white/70 backdrop-blur-xl border-r border-green-200 shadow-[6px_0_30px_rgba(34,197,94,0.12)] transition-all duration-500 flex flex-col",
-        collapsed ? "w-20 p-4" : "w-72 p-6 rounded-r-3xl"
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        {!collapsed ? (
-          <h1 className="text-3xl font-extrabold bg-gradient-to-r from-green-500 via-emerald-500 to-teal-600 bg-clip-text text-transparent">
-            FinTrack
-          </h1>
-        ) : (
-          <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center shadow-md">
-            <Home className="w-5 h-5 text-white" />
-          </div>
-        )}
+    <div className="w-72 h-screen bg-white border-r shadow-md flex flex-col rounded-r-3xl">
 
-        <button
-          onClick={() => setCollapsed(!collapsed)}
-          className="p-2 rounded-xl bg-white/40 hover:bg-white/60 backdrop-blur-md transition-all duration-300 text-green-700"
-        >
-          <ChevronLeft
-            className={cn(
-              "w-5 h-5 transition-transform duration-300",
-              collapsed && "rotate-180"
-            )}
-          />
-        </button>
+      {/* Logo */}
+      <div className="p-8 pb-4">
+        <h1 className="text-3xl font-bold text-blue-700">FINTRACK</h1>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 flex flex-col gap-2">
-        <SidebarItem icon={Home} label="Dashboard" active collapsed={collapsed} />
-        <SidebarItem icon={Wallet} label="Expenses" collapsed={collapsed} />
-        <SidebarItem icon={PieChart} label="Categories" collapsed={collapsed} />
-        <SidebarItem icon={BarChart2} label="Analytics" collapsed={collapsed} />
+      {/* Menu */}
+      <div className="flex-1 px-4 space-y-1">
+        <SidebarItem icon={Home} label="Dashboard" to="/" active={location.pathname === "/"} />
+        <SidebarItem icon={BarChart2} label="Analytics" to="/analytics" active={location.pathname === "/analytics"} />
+        <SidebarItem icon={Wallet} label="Wallet" to="/wallet" active={location.pathname === "/wallet"} />
+        <SidebarItem icon={User} label="Accounts" to="/accounts" active={location.pathname === "/accounts"} />
 
-        {!collapsed && (
-          <div className="my-6 h-px bg-gradient-to-r from-transparent via-green-200 to-transparent" />
-        )}
+        <div className="border-t my-4"></div>
 
-        <SidebarItem icon={User} label="Profile" collapsed={collapsed} />
-        <SidebarItem icon={Settings} label="Settings" collapsed={collapsed} />
-      </nav>
+        <SidebarItem icon={Settings} label="Settings" to="/settings" active={location.pathname === "/settings"} />
+        <SidebarItem icon={Shield} label="Security" to="/security" active={location.pathname === "/security"} />
+        <SidebarItem icon={HelpCircle} label="Help Centre" to="/help" active={location.pathname === "/help"} />
+      </div>
 
-      {/* Profile Footer */}
-      <div className="mt-auto pt-6 border-t border-green-100/30">
-        <div
-          className={cn(
-            "flex items-center gap-3 p-4 rounded-2xl bg-white/40 backdrop-blur-md border border-green-100/50 hover:bg-white/60 transition-all duration-300 shadow-sm cursor-pointer",
-            collapsed && "justify-center p-3"
-          )}
-        >
-          {!collapsed && (
-            <>
-              <div className="w-10 h-10 rounded-2xl bg-green-500 flex items-center justify-center text-white font-bold shadow-md">
-                JD
-              </div>
-
-              <div className="flex flex-col">
-                <p className="text-sm font-semibold text-green-700">John Doe</p>
-                <p className="text-xs text-gray-600">Premium User</p>
-              </div>
-            </>
-          )}
-
-          <div className="ml-auto w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center shadow-md">
-            <PieChart className="w-4 h-4 text-white" />
+      {/* User Section */}
+      <div className="p-6 bg-gradient-to-r from-blue-50 to-blue-100 m-4 rounded-2xl shadow">
+        <div className="flex items-center gap-3">
+          <img
+            src="https://via.placeholder.com/40"
+            className="w-10 h-10 rounded-full"
+          />
+          <div>
+            <p className="font-semibold text-gray-800">Maanvi S</p>
+            <p className="text-xs text-gray-500">General Manager</p>
           </div>
         </div>
       </div>
@@ -82,37 +54,27 @@ export default function Sidebar() {
   );
 }
 
+/* Sidebar Item Component */
 interface SidebarItemProps {
   icon: LucideIcon;
   label: string;
+  to: string;
   active?: boolean;
-  collapsed?: boolean;
 }
 
-function SidebarItem({ icon: Icon, label, active = false, collapsed }: SidebarItemProps) {
+function SidebarItem({ icon: Icon, label, to, active = false }: SidebarItemProps) {
   return (
-    <button
+    <Link
+      to={to}
       className={cn(
-        "group flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 overflow-hidden",
-        "text-gray-700 hover:bg-green-50 hover:text-green-700",
-
-        active && "bg-green-100 text-green-700 font-semibold shadow-sm border border-green-200",
-
-        collapsed && "justify-center px-3"
+        "flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition",
+        active
+          ? "bg-blue-600 text-white shadow"
+          : "text-gray-700 hover:bg-blue-50 hover:text-blue-700"
       )}
     >
-      {/* Icon */}
-      <Icon
-        className={cn(
-          "h-5 w-5 transition-all duration-300",
-          active ? "text-green-600" : "text-gray-500 group-hover:text-green-600"
-        )}
-      />
-
-      {/* Label */}
-      {!collapsed && (
-        <span className="font-medium tracking-wide">{label}</span>
-      )}
-    </button>
+      <Icon className="w-5 h-5" />
+      <span className="font-medium">{label}</span>
+    </Link>
   );
 }

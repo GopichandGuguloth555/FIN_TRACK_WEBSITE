@@ -1,11 +1,20 @@
+import { Routes, Route } from "react-router-dom";
 import DashboardLayout from "./components/DashboardLayout";
 
-function App() {
+import DashboardPage from "./pages/Dashboard";
+import AnalyticsPage from "./pages/Analytics";
+import WalletPage from "./pages/Wallet";
+import AccountsPage from "./pages/Accounts";
+
+export default function App() {
   return (
     <DashboardLayout>
-      <h1 className="text-3xl font-semibold mb-6">Dashboard</h1>
+      <Routes>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/analytics" element={<AnalyticsPage />} />
+        <Route path="/wallet" element={<WalletPage />} />
+        <Route path="/accounts" element={<AccountsPage />} />
+      </Routes>
     </DashboardLayout>
   );
 }
-
-export default App;
