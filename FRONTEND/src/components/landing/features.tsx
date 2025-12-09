@@ -1,47 +1,55 @@
-import { Wallet, BarChart2, PieChart, ShieldCheck } from "lucide-react";
+import { Shield, LineChart, Wallet } from "lucide-react";
 
-const features = [
-  {
-    icon: Wallet,
-    title: "Smart Expense Tracking",
-    desc: "Monitor your income and expenses with real-time updates.",
-  },
-  {
-    icon: BarChart2,
-    title: "Visual Analytics",
-    desc: "Beautiful charts to understand your spending habits.",
-  },
-  {
-    icon: PieChart,
-    title: "Budget Management",
-    desc: "Stay on track with monthly and category-based budgets.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Secure & Private",
-    desc: "Your data is encrypted and stored securely.",
-  },
-];
-
-export default function Features() {
+export default function LandingFeatures() {
   return (
-    <section className="py-20 bg-white">
+    <section className="py-24 bg-[#F8F7FC]">
       <div className="max-w-6xl mx-auto px-6">
-        
-        <h2 className="text-3xl font-bold text-center text-brand-text">
-          Everything you need to stay financially healthy
+
+        {/* Title */}
+        <h2 className="text-3xl md:text-4xl font-bold text-center text-[#4E3B84] mb-12">
+          Everything You Need for Smart Money Management
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mt-12">
-          {features.map((f, idx) => (
-            <div key={idx} className="rounded-card p-6 bg-brand-card border shadow-soft text-center hover:shadow-card transition">
-              <f.icon className="h-8 w-8 mx-auto text-brand-purpleDark mb-3" />
-              <p className="font-semibold text-brand-text">{f.title}</p>
-              <p className="text-sm text-brand-textMuted mt-2">{f.desc}</p>
-            </div>
-          ))}
-        </div>
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Tracking */}
+          <div className="
+            p-8 bg-white rounded-2xl border shadow-sm text-center transition
+            hover:shadow-xl hover:-translate-y-1 duration-300
+          ">
+            <LineChart className="h-12 w-12 mx-auto text-[#4E3B84] mb-5 drop-shadow-md" />
+            <h3 className="text-xl font-semibold mb-2">Smart Tracking</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Monitor your income & expenses with real-time data insights.
+            </p>
+          </div>
 
+          {/* Security */}
+          <div className="
+            p-8 bg-white rounded-2xl border shadow-sm text-center transition
+            hover:shadow-xl hover:-translate-y-1 duration-300
+          ">
+            <Shield className="h-12 w-12 mx-auto text-[#4E3B84] mb-5 drop-shadow-md" />
+            <h3 className="text-xl font-semibold mb-2">Top-Tier Security</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Bank-grade encryption keeps your financial data safe & private.
+            </p>
+          </div>
+
+          {/* Insights */}
+          <div className="
+            p-8 bg-white rounded-2xl border shadow-sm text-center transition
+            hover:shadow-xl hover:-translate-y-1 duration-300
+          ">
+            <Wallet className="h-12 w-12 mx-auto text-[#4E3B84] mb-5 drop-shadow-md" />
+            <h3 className="text-xl font-semibold mb-2">Financial Insights</h3>
+            <p className="text-gray-600 text-sm leading-relaxed">
+              Beautiful charts and summaries to understand your spending habits.
+            </p>
+          </div>
+
+        </div>
       </div>
     </section>
   );
