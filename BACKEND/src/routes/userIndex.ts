@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { userAuth } from "../middlewares/auth";
 import { BlacklistModel } from "../models/blacklist";
-import { z } from "zod";
+import { email, z } from "zod";
 
 
 dotenv.config();
@@ -16,15 +16,18 @@ const router = express.Router();
 const signupSchema = z.object({
   userName: z
     .string()
-    .min(3, { message: "Username must be at least 3 characters long" })
-    .max(20, { message: "Username cannot exceed 20 characters" })
+    .min(3, { message: "Username must be at least 3 characters" })
+    .max(20)
     .trim(),
+
+  email: z
+    .string()
+    .email({ message: "Invalid email address" }),
+
   password: z
     .string()
-    .min(6, { message: "Password must be at least 6 characters long" }),
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
-
-
 
 router.post("/signup", async (req, res) => {
   try {
@@ -37,14 +40,14 @@ router.post("/signup", async (req, res) => {
       });
     }
 
-    const { userName, password } = result.data;
+    const { userName, email, password } = result.data;
 
-    const existingUser = await UserModel.findOne({ userName });
+    const existingUser = await UserModel.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists!" });
+      return res.status(400).json({ message: "Email already exists!" });
     }
 
-    const newUser = await UserModel.create({ userName, password });
+    const newUser = await UserModel.create({ userName, email, password });
 
     return res.status(201).json({
       message: "User created successfully!",
@@ -52,7 +55,6 @@ router.post("/signup", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error during signup:", error);
     return res.status(500).json({
       message: "Internal server error",
       error: (error as Error).message,
@@ -60,8 +62,9 @@ router.post("/signup", async (req, res) => {
   }
 });
 
+
 const loginSchema = z.object({
-  userName: z.string().nonempty("Username is required"),
+   email: z.string().email("user email is required"),
   password: z.string().nonempty("Password is required"),
 });
 
@@ -76,9 +79,9 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const { userName, password } = result.data;
+    const { email, password } = result.data;
 
-    const existingUser = await UserModel.findOne({ userName });
+    const existingUser = await UserModel.findOne({email});
     if (!existingUser) {
       return res
         .status(400)
