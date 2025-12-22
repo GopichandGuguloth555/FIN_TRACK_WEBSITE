@@ -1,193 +1,124 @@
 import express from "express";
 import { BudjetModel } from "../models/bujet";
+import { TransactionModel } from "../models/tarnsactions";
 import { userAuth } from "../middlewares/auth";
-import { time } from "console";
 
 const router = express.Router();
 
 router.post("/", userAuth, async (req, res) => {
+  try {
+    const { category, month, amount } = req.body;
 
-    try
-    {
-        const { category, month, amount } = req.body;
-
-        if (!category || !month || !amount) {
-            return res.status(404).json({
-
-                message: "All Feilds Are Required! ✅ "
-            })
-        }
-
-        //@ts-ignore
-        const userId = req.user.id;
-
-        const response = await BudjetModel.create({
-            
-            userId,
-            category,
-            month,
-            amount
-        });
-
-        await response.save();
-
-        res.json({
-
-            message: "Budjet Goal Created Sucessfully!✅ ",
-            data: response
-        });
-
-    } catch (error) {
-       
-        console.error(error);
-        res.status(500).json({ message: "Server error" });
+    if (!category || !month || !amount) {
+      return res.status(400).json({ message: "All fields are required" });
     }
 
+    // @ts-ignore
+    const userId = req.user.id;
+
+    const budget = await BudjetModel.create({
+      userId,
+      category,
+      month,
+      amount,
+    });
+
+    res.json({
+      message: "Budget created successfully",
+      data: budget,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
-router.get("/",userAuth,async(req,res)=>{
-    try 
-    {
-        //@ts-ignore
-        const userId = req.user.id;
+router.get("/", userAuth, async (req, res) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.id;
 
-        const budjets = await BudjetModel.find({ userId});
+    const budgets = await BudjetModel.find({ userId });
 
-        if(!budjets)
-        {
-            res.status(404).json({
+    const budgetsWithSpent = await Promise.all(
+      budgets.map(async (budget) => {
+        const [year, month] = budget.month.split("-");
+        const start = new Date(+year, +month - 1, 1);
+        const end = new Date(+year, +month, 1);
 
-                message:"Now Budjets Are Created!"
-            })
-        }
+        const spentAgg = await TransactionModel.aggregate([
+          {
+            $match: {
+              userId,
+              type: "expense",
+              category: budget.category,
+              date: { $gte: start, $lt: end },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$amount" },
+            },
+          },
+        ]);
 
-        res.json({
+        return {
+          ...budget.toObject(),
+          spent: spentAgg[0]?.total || 0,
+        };
+      })
+    );
 
-            message:"Budject Goals Are Fetched Sucessfully!",
-            data:budjets
-
-        })
-        
-    } 
-    catch (error) 
-    {
-        console.error("Error fetching Budject Goals!:", error);
-        res.status(500).json({
-        message: "Failed to Budject Goals!",
-        error: error instanceof Error ? error.message : error,
-        });
-        
-    }
+    res.json({
+      message: "Budgets fetched successfully",
+      data: budgetsWithSpent,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to fetch budgets" });
+  }
 });
 
-router.get("/:id",userAuth,async(req,res)=>{
+router.put("/:id", userAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category, month, amount } = req.body;
 
-    try 
-    {
-        const {id} = req.params;
+    // @ts-ignore
+    const userId = req.user.id;
 
-        //@ts-ignore
-        const userId = req.user.id;
-
-        const budjet= await BudjetModel.findOne({ _id: id, userId});
-
-        if(!budjet)
-        {
-            return res.status(404).json({
-
-                message:"Budjet Goal Not Found!"
-            })
-        }
-
-        res.json({
-
-            message:"Budjet Goal Fetched Sucessfully!"
-        });
-    } 
-    catch (error) 
-    {
-        console.error("Error fetching Budject Goal !:", error);
-        res.status(500).json({
-        message: "Failed to Fecth Budject Goal!",
-        error: error instanceof Error ? error.message : error,
-        }); 
+    const budget = await BudjetModel.findOne({ _id: id, userId });
+    if (!budget) {
+      return res.status(404).json({ message: "Budget not found" });
     }
-})
 
-router.put("/:id",userAuth,async(req,res)=>{
+    if (category) budget.category = category;
+    if (month) budget.month = month;
+    if (amount) budget.amount = amount;
 
-    try 
-    {
-        const {id} = req.params;
-        const { category,month,amount}=req.body;
+    await budget.save();
 
-        //@ts-ignore
-        const userId = req.user.id;
-
-        const response = await BudjetModel.findOne({ _id: id, userId });
-
-        if(!response)
-        {
-           return res.status(404).json({
-                message:"Budjet Not Found!"
-            });
-        }
-
-        if(category) response.category = category;
-        if(month) response.month = month;
-        if(amount) response.amount = amount;
-
-        await response.save();
-
-        res.json({
-
-            mesaage:"Budjet Goal Updated Sucessfully!",
-            data:response
-        })
-
-        
-    } 
-    catch (error) 
-    {
-        console.error("Error Updating Budject Goal !:", error);
-        res.status(500).json({
-        message: "Failed to Update Budject Goal!",
-        error: error instanceof Error ? error.message : error,
-        }); 
-    }
+    res.json({
+      message: "Budget updated successfully",
+      data: budget,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to update budget" });
+  }
 });
 
-router.delete("/:id",userAuth,async(req,res)=>{
+router.delete("/:id", userAuth, async (req, res) => {
+  try {
+    const { id } = req.params;
 
-    try 
-    {
-        const {id} = req.params;
+    // @ts-ignore
+    const userId = req.user.id;
 
-        //@ts-ignore
-        const userId=req.user.id;
+    await BudjetModel.findOneAndDelete({ _id: id, userId });
 
-        const budjet =  await BudjetModel.findOneAndDelete({ _id: id, userId});
-        
-        if(!budjet)
-        {
-            return res.status(404).json({
-                message:"Budject Not Found!"
-            })
-        }
-
-        res.json({
-            message:"Budject Goal Removed SucessFully!"
-        })
-
-    } 
-    catch (error) 
-    {
-        console.error("Error Removing Budjet Goal !:", error);
-        res.status(500).json({
-        message: "Failed to Remove Budjet Goal!",
-        error: error instanceof Error ? error.message : error,
-        }); 
-    }
+    res.json({ message: "Budget deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Failed to delete budget" });
+  }
 });
 
 export default router;

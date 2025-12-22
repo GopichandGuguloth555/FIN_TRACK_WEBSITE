@@ -29,7 +29,7 @@ export default function Sidebar() {
         p-6
       "
     >
-      {/* Logo */}
+     
       <div className="flex items-center justify-center mb-10 pt-10 bg-transparent">
         <img
           src="/src/assets/FintrackLogo.png"
@@ -38,7 +38,6 @@ export default function Sidebar() {
         />
       </div>
 
-      {/* Nav */}
       <nav className="flex flex-col gap-3">
         {navItems.map((item) => (
           <NavLink
@@ -67,7 +66,7 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      {/* Footer Settings */}
+      
       <div className="mt-auto">
         <div
           className="

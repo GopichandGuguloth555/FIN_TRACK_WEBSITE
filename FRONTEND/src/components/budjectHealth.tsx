@@ -1,8 +1,8 @@
 export default function BudgetHealth() {
   const items = [
-    { label: "Food", percent: 70, color: "#4E3B84" },       // Dark purple
-    { label: "Rent", percent: 90, color: "#7C6BB2" },       // Medium purple
-    { label: "Savings", percent: 45, color: "#C7BEE7" },    // Light purple
+    { label: "Food", percent: 70, color: "#4E3B84" },      
+    { label: "Rent", percent: 90, color: "#7C6BB2" },       
+    { label: "Savings", percent: 45, color: "#C7BEE7" },  
   ];
 
   return (

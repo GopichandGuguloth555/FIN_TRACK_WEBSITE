@@ -1,28 +1,35 @@
-import { ChartWrapper } from "@/components/ui/sprendignChart";
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+} from "recharts";
 
-const data = [
-  { month: "Jan", income: 3000, expense: 1800 },
-  { month: "Feb", income: 3500, expense: 2100 },
-  { month: "Mar", income: 4000, expense: 2500 },
-  { month: "Apr", income: 3800, expense: 2600 },
-];
+export default function ExpenseTrendChart({ data }: { data: any[] }) {
+  const chartData = data.map((d) => ({
+    month: d._id,
+    expense: d.totalExpense,
+  }));
 
-export function ExpenseTrendChart() {
   return (
-    <ChartWrapper>
-      <h3 className="text-lg font-semibold mb-4">Expense Activity</h3>
-      <div className="h-64">
-        <ResponsiveContainer>
-          <LineChart data={data}>
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Line type="monotone" dataKey="income" stroke="#16A34A" strokeWidth={3} />
-            <Line type="monotone" dataKey="expense" stroke="#EF4444" strokeWidth={3} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </ChartWrapper>
+    <div className="bg-white rounded-card p-4 shadow">
+      <h3 className="font-semibold mb-4">Monthly Expense Trend</h3>
+
+      <ResponsiveContainer width="100%" height={280}>
+        <LineChart data={chartData}>
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Line
+            type="monotone"
+            dataKey="expense"
+            stroke="#4F3BA9"
+            strokeWidth={2}
+          />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
   );
 }

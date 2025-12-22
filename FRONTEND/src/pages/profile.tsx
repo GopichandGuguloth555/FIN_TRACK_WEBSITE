@@ -1,24 +1,15 @@
 import ProfileCard from "../components/profile/profileCard";
-import AccountSettings from "../components/profile/accountSettings";
-import SecuritySettings from "../components/profile/sequrity";
-import ThemeSettings from "../components/profile/themeSettings";
 
 export default function ProfilePage() {
   return (
-    <div className="space-y-6">
+    <div className="min-h-screen bg-[#F7F6FF] p-6">
+      <h1 className="text-2xl font-semibold text-gray-800 mb-6">
+        My Profile
+      </h1>
 
-      {/* Profile Card */}
-      <ProfileCard />
-
-      {/* Settings Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AccountSettings />
-        <SecuritySettings />
+      <div className="space-y-6">
+        <ProfileCard />
       </div>
-
-      {/* Theme Section */}
-      <ThemeSettings />
-
     </div>
   );
 }

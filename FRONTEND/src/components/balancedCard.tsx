@@ -10,7 +10,7 @@ export default function BalanceCard() {
         shadow-[0_8px_22px_rgba(78,59,132,0.35)]
       "
     >
-      {/* Title */}
+   
       <p className="text-lg opacity-90 mb-1">Current Balance</p>
 
       {/* Balance Amount */}

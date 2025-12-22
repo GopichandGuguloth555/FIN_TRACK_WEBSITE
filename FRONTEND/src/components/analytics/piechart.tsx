@@ -1,35 +1,71 @@
-import { PieChart, Pie, Cell, Legend } from "recharts";
+import { useEffect, useState } from "react";
+import { PieChart, Pie, Cell, Legend, Tooltip } from "recharts";
 
-const data = [
-  { name: "Food", value: 3200, color: "#FF6B6B" },
-  { name: "Travel", value: 800, color: "#4F3BA9" },
-  { name: "Shopping", value: 5000, color: "#FFB347" },
-  { name: "Bills", value: 2500, color: "#6BCB77" },
+const COLORS = [
+  "#FF6B6B",
+  "#FFB347",
+  "#4F3BA9",
+  "#6BCB77",
+  "#4D96FF",
 ];
 
-export default function CategoryPieChart() {
+export default function CategoryPieChart({ month }: { month: string }) {
+  const [data, setData] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (month) fetchCategory();
+  }, [month]);
+
+  const fetchCategory = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        `http://localhost:5000/analytics/category?type=expense&month=${month}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const json = await res.json();
+      setData(json.data);
+    } catch (error) {
+      console.error("Failed to fetch category", error);
+    }
+  };
+
   return (
-    <div className="rounded-card bg-white border border-brand-borderLight shadow-card p-4 h-[350px]">
-      <p className="text-sm font-semibold text-brand-text mb-2">
+    <div className="rounded-card bg-white border shadow-card p-4 h-[350px]">
+      <p className="text-sm font-semibold mb-2">
         Category Breakdown
       </p>
 
-      <PieChart width={300} height={260}>
-        <Pie
-          data={data}
-          cx="50%"
-          cy="50%"
-          outerRadius={80}
-          dataKey="value"
-          paddingAngle={3}
-        >
-          {data.map((entry, index) => (
-            <Cell key={index} fill={entry.color} />
-          ))}
-        </Pie>
-
-        <Legend />
-      </PieChart>
+      {data.length === 0 ? (
+        <p className="text-sm text-gray-400">No data</p>
+      ) : (
+        <PieChart width={300} height={260}>
+          <Pie
+            data={data}
+            dataKey="total"
+            nameKey="category"
+            cx="50%"
+            cy="50%"
+            outerRadius={80}
+            paddingAngle={3}
+          >
+            {data.map((_, index) => (
+              <Cell
+                key={index}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      )}
     </div>
   );
 }

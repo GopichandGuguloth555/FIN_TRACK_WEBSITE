@@ -1,38 +1,51 @@
-const dummy = [
-  { title: "Groceries", amount: -1200, category: "Food", date: "Today" },
-  { title: "Salary", amount: 45000, category: "Income", date: "Yesterday" },
-  { title: "Bus Ticket", amount: -50, category: "Travel", date: "2 days ago" },
-];
+import { Trash2, Pencil } from "lucide-react";
+import EditTransactionDialog from "./editTransaction";
 
-export default function TransactionTable() {
+interface Props {
+  data: any[];
+  onDelete: (id: string) => void;
+  refresh: () => void;
+}
+
+export default function TransactionTable({ data, onDelete, refresh }: Props) {
   return (
-    <div className="rounded-card bg-white shadow-card border border-brand-borderLight overflow-hidden mt-4">
-      
+    <div className="rounded-card bg-white shadow-card border border-gray-200 overflow-hidden mt-4">
+
       {/* Header */}
-      <div className="grid grid-cols-4 px-4 py-3 bg-brand-purpleLight/40 text-sm font-medium text-brand-text">
+      <div className="grid grid-cols-6 px-4 py-3 bg-purple-100 text-sm font-semibold">
         <p>Title</p>
         <p>Category</p>
         <p>Amount</p>
         <p>Date</p>
+        <p>Description</p>
+        <p>Actions</p>
       </div>
 
-      {/* Rows */}
-      <div className="divide-y divide-brand-borderLight">
-        {dummy.map((item, idx) => (
-          <div
-            key={idx}
-            className="grid grid-cols-4 px-4 py-3 text-sm hover:bg-brand-purpleSoft/30 transition"
-          >
-            <p className="font-medium text-brand-text">{item.title}</p>
-            <p className="text-brand-textMuted">{item.category}</p>
-            <p
-              className={
-                item.amount < 0 ? "text-red-500" : "text-brand-green"
-              }
-            >
-              {item.amount < 0 ? "-" : "+"}₹{Math.abs(item.amount)}
+      <div className="divide-y">
+        {data.map((item) => (
+          <div key={item._id} className="grid grid-cols-6 px-4 py-3 text-sm">
+
+            <p>{item.type}</p>
+            <p>{item.category}</p>
+            <p className={item.type === "expense" ? "text-red-500" : "text-green-600"}>
+              {item.amount}
             </p>
-            <p className="text-brand-textMuted">{item.date}</p>
+            <p>{item.date?.substring(0, 10)}</p>
+            <p>{item.description || "-"}</p>
+
+            <div className="flex gap-3">
+              {/* EDIT BUTTON */}
+              <EditTransactionDialog transaction={item} onUpdated={refresh} />
+
+              {/* DELETE BUTTON */}
+              <button
+                onClick={() => onDelete(item._id)}
+                className="text-red-500 hover:text-red-700"
+              >
+                <Trash2 size={18} />
+              </button>
+            </div>
+
           </div>
         ))}
       </div>

@@ -3,7 +3,6 @@ import Features from "../components/landing/features";
 import Footer from "../components/landing/footer";
 import LandingNavbar from "@/components/landing/navbar";
 import AboutUs from "@/components/landing/aboutUs";
-import ContactUs from "@/components/landing/conatctus";
 
 export default function LandingPage() {
   return (
@@ -12,7 +11,6 @@ export default function LandingPage() {
       <Hero />
       <Features />
       <AboutUs/>
-      <ContactUs/>
       <Footer />
     </div>
   );

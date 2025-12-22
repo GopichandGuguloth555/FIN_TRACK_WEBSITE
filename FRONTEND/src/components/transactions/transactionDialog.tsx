@@ -1,3 +1,5 @@
+import { useState } from "react";
+import axios from "axios";
 import {
   Dialog,
   DialogContent,
@@ -6,32 +8,105 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 
-export default function AddTransactionDialog() {
+interface Props {
+  onAdded: () => void;
+}
+
+export default function AddTransactionDialog({ onAdded }: Props) {
+  const [open, setOpen] = useState(false);
+  const [type, setType] = useState("");
+  const [category, setCategory] = useState("");
+  const [amount, setAmount] = useState<number | "">("");
+  const [date, setDate] = useState("");
+  const [description, setDescription] = useState("");
+
+  async function handleAdd() {
+    try {
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        "http://localhost:5000/transactions",
+        { type, category, amount, date, description },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      onAdded();
+      setOpen(false);
+    } catch (err) {
+      console.log("Add Transaction Error:", err);
+    }
+  }
+
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
+      
+      {/* IMPORTANT: Button must be single — NO nested button */}
       <DialogTrigger asChild>
-        <Button className="bg-brand-purpleDark hover:bg-brand-purpleDarker text-white">
+        <Button className="text-white hover:bg-purple-800">
           + Add Transaction
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="bg-white rounded-panel p-6 max-w-sm">
+      <DialogContent className="bg-white rounded-xl p-6 max-w-sm">
         <DialogHeader>
-          <DialogTitle className="text-brand-purpleDark">
-            Add Transaction
-          </DialogTitle>
+          <DialogTitle>Add Transaction</DialogTitle>
         </DialogHeader>
 
-        <div className="mt-4 flex flex-col gap-3">
-          <Input placeholder="Title" />
-          <Input placeholder="Amount (e.g. 500 or -200)" />
+        <div className="space-y-3 mt-3">
 
-          <Input placeholder="Category" />
-          <Input placeholder="Date" type="date" />
+          <Select onValueChange={setType}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select Type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="income">Income</SelectItem>
+              <SelectItem value="expense">Expense</SelectItem>
+            </SelectContent>
+          </Select>
 
-          <Button className="mt-3 bg-brand-purpleDark hover:bg-brand-purpleDarker text-white">
+          <Select onValueChange={setCategory}>
+            <SelectTrigger>
+              <SelectValue placeholder="Category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="Food">Food</SelectItem>
+              <SelectItem value="Travel">Travel</SelectItem>
+              <SelectItem value="Shopping">Shopping</SelectItem>
+              <SelectItem value="Bills">Bills</SelectItem>
+              <SelectItem value="Entertainment">Entertainment</SelectItem>
+              <SelectItem value="Others">Others</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(Number(e.target.value))}
+            placeholder="Amount"
+          />
+
+          <Input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Description"
+          />
+
+          <Button className="w-full bg-purple-700 text-white" onClick={handleAdd}>
             Save
           </Button>
         </div>

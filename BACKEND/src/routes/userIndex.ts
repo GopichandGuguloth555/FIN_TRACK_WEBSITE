@@ -62,7 +62,6 @@ router.post("/signup", async (req, res) => {
   }
 });
 
-
 const loginSchema = z.object({
    email: z.string().email("user email is required"),
   password: z.string().nonempty("Password is required"),
@@ -113,41 +112,35 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
 router.put("/profile", userAuth, async (req, res) => {
-
   try {
     const { userName, password } = req.body;
 
+    const updateData: any = {};
+    if (userName) updateData.userName = userName;
+    if (password) updateData.password = password;
+
+   
     const updatedUser = await UserModel.findByIdAndUpdate(
-
-      //@ts-ignore
+     //@ts-ignore
       req.user.id,
-      { userName, password },
+      updateData,
       { new: true }
-
-    );
+    ).select("-password");
 
     if (!updatedUser) {
-      return res.status(404).json({
-        message: "Internal Server Eroor!"
-      });
+      return res.status(404).json({ message: "User not found!" });
     }
 
     res.json({
       message: "Profile updated successfully!",
       user: updatedUser,
     });
-
-  }
-  catch (error) {
-
-    console.error("Error updating profile:", error);
+  } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
   }
+});
 
-})
 
 router.get("/profile", userAuth, async (req, res) => {
   try {

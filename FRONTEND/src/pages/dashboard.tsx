@@ -8,7 +8,7 @@ export default function DashboardPage() {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-4">
 
-      {/* LEFT SIDE — 2/3 width */}
+      
       <div className="lg:col-span-2 space-y-6">
 
         {/* Balance Card */}
@@ -42,10 +42,10 @@ export default function DashboardPage() {
 
       </div>
 
-      {/* RIGHT SIDE — 1/3 width */}
+      
       <div className="space-y-6">
 
-        {/* Income Summary */}
+       
         <div
           className="
             rounded-2xl 
@@ -58,7 +58,7 @@ export default function DashboardPage() {
           <MonthlySummary type="income" />
         </div>
 
-        {/* Expense Summary */}
+       
         <div
           className="
             rounded-2xl 
@@ -71,7 +71,7 @@ export default function DashboardPage() {
           <MonthlySummary type="expense" />
         </div>
 
-        {/* Spending Chart */}
+      
         <div
           className="
             rounded-2xl 
