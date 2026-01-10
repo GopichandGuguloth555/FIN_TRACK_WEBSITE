@@ -7,7 +7,7 @@ export default function AppLayout() {
     <div className="flex min-h-screen bg-brand-card">
       
       {/* Sidebar */}
-      <div className="w-64 flex-shrink-0">
+      <div className="w-70 flex-shrink-0">
         <Sidebar />
       </div>
 
