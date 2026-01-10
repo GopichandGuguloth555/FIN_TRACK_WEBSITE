@@ -1,61 +1,75 @@
+import { useEffect, useState } from "react";
 import { Wallet, ShoppingBag, Home, Briefcase } from "lucide-react";
 
-const activityData = [
-  { label: "Salary Deposit", amount: "+₹2,100.00", positive: true, icon: Wallet },
-  { label: "Groceries", amount: "+₹120.50", positive: true, icon: ShoppingBag },
-  { label: "Rent", amount: "-₹1,500.00", positive: false, icon: Home },
-  { label: "Freelance Payment", amount: "+₹350.00", positive: true, icon: Briefcase },
-];
+interface Activity {
+  _id: string;
+  label: string;
+  amount: number;
+  type: "income" | "expense";
+  category: string;
+}
+
+const iconMap: Record<string, any> = {
+  salary: Wallet,
+  groceries: ShoppingBag,
+  rent: Home,
+  freelance: Briefcase,
+};
 
 export default function RecentActivity() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://localhost:5000/transactions", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const json = await res.json();
+
+      const recent = (json.data || []).slice(0, 5).map((t: any) => ({
+        _id: t._id,
+        label: t.description || t.category,
+        amount: t.amount,
+        type: t.type,
+        category: t.category,
+      }));
+
+      setActivities(recent);
+    };
+
+    fetchRecentActivity();
+  }, []);
+
   return (
-    <div
-      className="
-        bg-white
-        rounded-2xl
-        shadow-[0_4px_15px_rgba(0,0,0,0.06)]
-        p-6
-        border border-[#E8E5D8]
-      "
-    >
-      <p className="text-lg font-semibold text-[#3D3B47] mb-4">
-        Recent Activity
-      </p>
+    <div className="w-full bg-white rounded-2xl shadow-md p-6 border border-[#E8E5D8]">
+      <p className="text-lg font-semibold mb-4">Recent Activity</p>
 
       <div className="space-y-4">
-        {activityData.map((item, index) => {
-          const Icon = item.icon;
+        {activities.map((item) => {
+          const Icon = iconMap[item.category] || Wallet;
+          const positive = item.type === "income";
 
           return (
-            <div
-              key={index}
-              className="flex items-center justify-between p-2 rounded-lg"
-            >
-              {/* LEFT SIDE */}
+            <div key={item._id} className="flex justify-between items-center">
               <div className="flex items-center gap-3">
-                <div
-                  className="
-                    h-10 w-10 rounded-full
-                    bg-[#EFEAFB]
-                    flex items-center justify-center
-                    text-[#4E3B84]
-                  "
-                >
+                <div className="h-10 w-10 rounded-full bg-[#EFEAFB] flex items-center justify-center text-[#4E3B84]">
                   <Icon className="h-5 w-5" />
                 </div>
-
-                <p className="text-sm text-[#3D3B47]">{item.label}</p>
+                <span className="text-sm">{item.label}</span>
               </div>
 
-              {/* RIGHT SIDE */}
-              <p
-                className={
-                  "text-sm font-semibold " +
-                  (item.positive ? "text-green-600" : "text-red-500")
-                }
+              <span
+                className={`text-sm font-semibold ${
+                  positive ? "text-green-600" : "text-red-500"
+                }`}
               >
-                {item.amount}
-              </p>
+                {positive ? "+" : "-"}₹{item.amount.toLocaleString()}
+              </span>
             </div>
           );
         })}

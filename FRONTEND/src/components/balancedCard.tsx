@@ -1,42 +1,43 @@
+import { useEffect, useState } from "react";
+import axios from "axios";
+
+interface SummaryResponse {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+}
+
 export default function BalanceCard() {
+  const [data, setData] = useState<SummaryResponse | null>(null);
+
+  useEffect(() => {
+    const fetchBalance = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await axios.get<SummaryResponse>(
+        "http://localhost:5000/analytics/summary",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      setData(res.data);
+    };
+
+    fetchBalance();
+  }, []);
+
+  if (!data) return null;
+
   return (
-    <div
-      className="
-        w-full
-        bg-[#4E3B84]
-        rounded-3xl
-        p-8
-        text-white
-        shadow-[0_8px_22px_rgba(78,59,132,0.35)]
-      "
-    >
-   
-      <p className="text-lg opacity-90 mb-1">Current Balance</p>
+    <div className="w-full h-40 bg-[#4E3B84] rounded-3xl p-6 text-white text-center">
+      <p className="text-4xl font-bold mb-3">Current Balance</p>
 
-      {/* Balance Amount */}
-      <h2 className="text-4xl font-semibold tracking-tight mb-6">
-        ₹45,230.75
+      <h2 className="text-4xl font-semibold tracking-tight">
+        ₹{data.balance.toLocaleString()}
       </h2>
-
-      {/* Stats Row */}
-      <div className="flex justify-between">
-        
-        <div>
-          <p className="text-sm opacity-80">Income</p>
-          <p className="text-xl font-semibold mt-1">₹58,230</p>
-        </div>
-
-        <div>
-          <p className="text-sm opacity-80">Expenses</p>
-          <p className="text-xl font-semibold mt-1">₹13,000</p>
-        </div>
-
-        <div>
-          <p className="text-sm opacity-80">Savings Rate</p>
-          <p className="text-xl font-semibold mt-1">78%</p>
-        </div>
-
-      </div>
     </div>
   );
 }

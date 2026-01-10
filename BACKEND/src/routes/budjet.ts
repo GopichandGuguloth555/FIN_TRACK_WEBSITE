@@ -5,6 +5,9 @@ import { userAuth } from "../middlewares/auth";
 
 const router = express.Router();
 
+/* =========================
+   CREATE BUDGET
+========================= */
 router.post("/", userAuth, async (req, res) => {
   try {
     const { category, month, amount } = req.body;
@@ -28,10 +31,14 @@ router.post("/", userAuth, async (req, res) => {
       data: budget,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Server error" });
   }
 });
 
+/* =========================
+   GET ALL BUDGETS (WITH SPENT)
+========================= */
 router.get("/", userAuth, async (req, res) => {
   try {
     // @ts-ignore
@@ -74,10 +81,74 @@ router.get("/", userAuth, async (req, res) => {
       data: budgetsWithSpent,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch budgets" });
   }
 });
 
+/* =========================
+   BUDGET HEALTH (FOR DASHBOARD)
+   GET /budget/health
+========================= */
+router.get("/health", userAuth, async (req, res) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.id;
+
+    const budgets = await BudjetModel.find({ userId });
+
+    const items = await Promise.all(
+      budgets.map(async (budget) => {
+        const [year, month] = budget.month.split("-");
+        const start = new Date(+year, +month - 1, 1);
+        const end = new Date(+year, +month, 1);
+
+        const spentAgg = await TransactionModel.aggregate([
+          {
+            $match: {
+              userId,
+              type: "expense",
+              category: budget.category,
+              date: { $gte: start, $lt: end },
+            },
+          },
+          {
+            $group: {
+              _id: null,
+              total: { $sum: "$amount" },
+            },
+          },
+        ]);
+
+        const spent = spentAgg[0]?.total || 0;
+
+        const percent =
+          budget.amount > 0
+            ? Math.min(Math.round((spent / budget.amount) * 100), 100)
+            : 0;
+
+        let color = "#2A9D8F"; // green
+        if (percent >= 80) color = "#E63946"; // red
+        else if (percent >= 50) color = "#F4A261"; // orange
+
+        return {
+          label: budget.category,
+          percent,
+          color,
+        };
+      })
+    );
+
+    res.json({ items });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch budget health" });
+  }
+});
+
+/* =========================
+   UPDATE BUDGET
+========================= */
 router.put("/:id", userAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -93,7 +164,7 @@ router.put("/:id", userAuth, async (req, res) => {
 
     if (category) budget.category = category;
     if (month) budget.month = month;
-    if (amount) budget.amount = amount;
+    if (amount !== undefined) budget.amount = amount;
 
     await budget.save();
 
@@ -102,10 +173,14 @@ router.put("/:id", userAuth, async (req, res) => {
       data: budget,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to update budget" });
   }
 });
 
+/* =========================
+   DELETE BUDGET
+========================= */
 router.delete("/:id", userAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -117,6 +192,7 @@ router.delete("/:id", userAuth, async (req, res) => {
 
     res.json({ message: "Budget deleted successfully" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to delete budget" });
   }
 });

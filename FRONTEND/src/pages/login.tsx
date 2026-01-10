@@ -47,7 +47,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0f172a] relative">
+    <div className="min-h-screen flex items-center justify-center bg-whiterelative">
 
       {/* Glow */}
       <div className="absolute top-0 left-0 w-72 h-72 bg-[#4E3B84] rounded-full blur-3xl opacity-20" />

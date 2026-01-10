@@ -4,10 +4,10 @@ import Header from "./header";
 
 export default function AppLayout() {
   return (
-    <div className="flex h-screen bg-brand-card">
-
+    <div className="flex min-h-screen bg-brand-card">
+      
       {/* Sidebar */}
-      <div className="w-64">
+      <div className="w-64 flex-shrink-0">
         <Sidebar />
       </div>
 
@@ -15,10 +15,11 @@ export default function AppLayout() {
       <div className="flex flex-1 flex-col">
         <Header />
 
-        <main className="mt-16 p-4 lg:p-6 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto px-6 py-6">
           <Outlet />
         </main>
       </div>
+
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import {
   BarChart,
   Bar,
@@ -8,24 +9,51 @@ import {
   CartesianGrid,
 } from "recharts";
 
+interface ChartItem {
+  name: string;
+  value: number;
+}
+
+interface CategoryResponse {
+  category: string;
+  total: number;
+}
+
 export default function SpendingChart() {
-  const data = [
-    { name: "Groceries", value: 400 },
-    { name: "Entertainment", value: 600 },
-    { name: "Utilities", value: 500 },
-    { name: "Transport", value: 900 },
-  ];
+  const [data, setData] = useState<ChartItem[]>([]);
+
+  useEffect(() => {
+    const fetchSpending = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(
+        "http://localhost:5000/analytics/category?type=expense",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const json = await res.json();
+
+      const chartData: ChartItem[] = (json.data || []).map(
+        (item: CategoryResponse) => ({
+          name:
+            item.category.charAt(0).toUpperCase() +
+            item.category.slice(1),
+          value: item.total,
+        })
+      );
+
+      setData(chartData);
+    };
+
+    fetchSpending();
+  }, []);
 
   return (
-    <div
-      className="
-        rounded-2xl
-        bg-white
-        border border-[#E8E5D8]
-        shadow-[0_4px_12px_rgba(0,0,0,0.06)]
-        p-6
-      "
-    >
+    <div className="rounded-2xl bg-white border border-[#E8E5D8] shadow-[0_4px_12px_rgba(0,0,0,0.06)] p-6">
       <p className="text-lg font-semibold text-[#3D3B47] mb-4">
         Spending Breakdown
       </p>
