@@ -32,7 +32,7 @@ export default function Sidebar() {
      
       <div className="flex items-center justify-center mb-10 pt-10 bg-transparent">
         <img
-          src="/src/assets/FintrackLogo.png"
+          src="/assets/FintrackLogo.png"
           alt="FinTrack Logo"
           className="w-40 h-auto object-contain bg-transparent mix-blend-multiply"
         />

@@ -61,7 +61,7 @@ export default function SignupPage() {
 
         <div className="flex justify-center mb-6">
           <img
-            src="/src/assets/logo.png"
+            src="/assets/FintrackLogo.png"
             alt="FinTrack Logo"
             className="w-28 h-auto object-contain"
           />
