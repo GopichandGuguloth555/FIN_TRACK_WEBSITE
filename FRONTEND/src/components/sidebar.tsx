@@ -19,10 +19,7 @@ const navItems = [
 export default function Sidebar() {
   return (
     <aside
-      className="
-        hidden lg:flex flex-col
-        h-screen w-[240px]
-        bg-[#D8D3E9]/90
+      className="hidden lg:flex flex-col h-screen w-[240px] bg-[#D8D3E9]/90
         backdrop-blur-xl
         border-r border-white/40
         shadow-[4px_0_25px_rgba(0,0,0,0.08)]
@@ -54,7 +51,7 @@ export default function Sidebar() {
 
               ${
                 isActive
-                  ? "bg-[#4E3B84] text-white shadow-lg scale-[1.02]"
+                  ? "bg-violet-900 text-white shadow-lg scale-[1.02]"
                   : "text-[#3F3D56] hover:bg-white/50 hover:shadow-md hover:scale-[1.01]"
               }
             `

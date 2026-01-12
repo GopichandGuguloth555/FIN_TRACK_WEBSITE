@@ -26,7 +26,7 @@ export default function LandingPage() {
          
 
           <div className="flex gap-3">
-            <Link to="/login" ><Button className=" w-40 h-16 " variant="outline">Log In</Button></Link>
+            <Link to="/login" ><Button className=" w-40 h-16 border-violet-500 " variant="outline">Log In</Button></Link>
             <Link to="/signup"><Button className=" w-40 h-16 bg-violet-900 hover:bg-violet-700">
               Get Started
               
@@ -35,7 +35,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
+     
       <section className="max-w-7xl mx-auto px-8 py-20 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         <div>
           <h1 className="text-4xl md:text-5xl font-bold leading-tight text-gray-900">
@@ -52,9 +52,9 @@ export default function LandingPage() {
           </p>
 
           <div className="mt-10">
-            <Button className=" w-40 h-16 bg-violet-900 hover:bg-violet-700 px-8 py-6 text-lg">
+            <Link to="/signup"><Button className=" w-40 h-16 bg-violet-900 hover:bg-violet-700 px-8 py-6 text-lg">
              lets Go!
-            </Button>
+            </Button></Link>
           </div>
         </div>
 

@@ -87,7 +87,7 @@ export default function SpendingChart() {
             <Bar
               dataKey="value"
               radius={[10, 10, 10, 10]}
-              fill="#A799D9"
+              fill="#4C1D95"
             />
           </BarChart>
         </ResponsiveContainer>

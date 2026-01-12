@@ -36,9 +36,9 @@ app.use("/analytics", analyticRoutes);
 app.use("/files", fileRoutes);
 
 app.get("/", (req, res) => {
-  res.send("🚀 Welcome to Fin_Track Backend API!");
+  res.send(" Welcome to Fin_Track Backend API!");
 });
-``
+
 app.listen(PORT, () => {
   console.log(`✅ Server running at http://localhost:${PORT}`);
 });

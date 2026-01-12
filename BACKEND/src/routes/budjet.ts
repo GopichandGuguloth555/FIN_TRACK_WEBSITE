@@ -5,9 +5,7 @@ import { userAuth } from "../middlewares/auth";
 
 const router = express.Router();
 
-/* =========================
-   CREATE BUDGET
-========================= */
+
 router.post("/", userAuth, async (req, res) => {
   try {
     const { category, month, amount } = req.body;
@@ -36,9 +34,7 @@ router.post("/", userAuth, async (req, res) => {
   }
 });
 
-/* =========================
-   GET ALL BUDGETS (WITH SPENT)
-========================= */
+
 router.get("/", userAuth, async (req, res) => {
   try {
     // @ts-ignore
@@ -86,10 +82,7 @@ router.get("/", userAuth, async (req, res) => {
   }
 });
 
-/* =========================
-   BUDGET HEALTH (FOR DASHBOARD)
-   GET /budget/health
-========================= */
+
 router.get("/health", userAuth, async (req, res) => {
   try {
     // @ts-ignore
@@ -146,9 +139,6 @@ router.get("/health", userAuth, async (req, res) => {
   }
 });
 
-/* =========================
-   UPDATE BUDGET
-========================= */
 router.put("/:id", userAuth, async (req, res) => {
   try {
     const { id } = req.params;
@@ -178,9 +168,6 @@ router.put("/:id", userAuth, async (req, res) => {
   }
 });
 
-/* =========================
-   DELETE BUDGET
-========================= */
 router.delete("/:id", userAuth, async (req, res) => {
   try {
     const { id } = req.params;
