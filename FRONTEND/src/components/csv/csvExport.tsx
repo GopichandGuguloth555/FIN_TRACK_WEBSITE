@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 
 export default function CsvExportButton() {
   function handleExport() {
-    // backend export will come later
+   
     alert("Exporting CSV...");
   }
 

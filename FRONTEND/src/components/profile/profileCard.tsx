@@ -73,11 +73,8 @@ export default function ProfileCard() {
         </div>
 
         <div>
-          <h2 className="text-xl font-semibold">{user?.userName}</h2>
+          <h2 className="text-2xl font-semibold">{user?.userName}</h2>
           <p className="text-sm text-gray-500">{user?.email}</p>
-          <span className="inline-block mt-2 text-xs bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-            Free User
-          </span>
         </div>
       </div>
 

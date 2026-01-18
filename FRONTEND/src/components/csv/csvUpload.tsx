@@ -10,12 +10,11 @@ export default function CsvUploadBox({ onUpload }: any) {
 
     setFileName(file.name);
 
-    // send file back to parent
     onUpload(file);
   }
 
   return (
-    <div className="rounded-panel bg-white border border-brand-borderLight shadow-soft p-6 flex flex-col items-center justify-center gap-4 text-center">
+    <div className="rounded-panel bg-white bg-violet-200 border border-brand-borderLight shadow-soft p-6 flex flex-col items-center justify-center gap-4 text-center">
 
       <UploadCloud className="h-10 w-10 text-brand-purpleDark" />
 

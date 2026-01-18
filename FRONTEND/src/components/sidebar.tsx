@@ -1,18 +1,13 @@
 import { NavLink } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Receipt,
-  Wallet,
-  BarChart2,
-  User,
-  Settings
-} from "lucide-react";
+  LayoutDashboard, Receipt, Wallet, BarChart2, ImportIcon,User,Settings} from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: LayoutDashboard, to: "/dashboard" },
   { label: "Transactions", icon: Receipt, to: "/transactions" },
   { label: "Budgets", icon: Wallet, to: "/budgets" },
   { label: "Analytics", icon: BarChart2, to: "/analytics" },
+  { label: "Imports",icon: ImportIcon, to:"/csv"},
   { label: "Profile", icon: User, to: "/profile" },
 ];
 
