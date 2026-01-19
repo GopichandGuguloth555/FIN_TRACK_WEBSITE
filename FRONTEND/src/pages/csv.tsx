@@ -1,27 +1,23 @@
 import { useState } from "react";
 import CsvUploadBox from "../components/csv/csvUpload";
-import CsvPreviewTable from "@/components/csv/csvPreview";
-import CsvExportButton from "@/components/csv/csvExport";
-
-interface CsvRow {
-  date: string;
-  title: string;
-  amount: string;
-  category: string;
-}
+import CsvExportButton from "../components/csv/csvExport";
+import CsvPreviewTable from "../components/csv/csvPreview";
 
 export default function CsvPage() {
-  
+  const [rows, setRows] = useState<any[]>([]);
+
   return (
     <div className="space-y-6">
-       
-       <div className="flex justify between items-center"> <CsvExportButton /></div>
-      <div className="justify-between items-center">
-          <br /><br />
-        <CsvUploadBox />
-      
+      {/* Export button */}
+      <div className="flex justify-end">
+        <CsvExportButton />
       </div>
-      {/* <CsvPreviewTable rows={rows} /> */}
+
+      {/* Upload CSV */}
+      <CsvUploadBox onUploaded={setRows} />
+
+      {/* Preview + Analyze */}
+      {rows.length > 0 && <CsvPreviewTable rows={rows} />}
     </div>
   );
 }
