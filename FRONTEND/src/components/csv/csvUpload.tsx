@@ -26,7 +26,7 @@ export default function CsvUploadBox({ onUpload }: any) {
         Choose File
         <input type="file" accept=".csv" className="hidden" onChange={handleFile} />
       </label>
-
+ 
       {fileName && (
         <p className="text-xs text-brand-textMuted">Selected: {fileName}</p>
       )}
