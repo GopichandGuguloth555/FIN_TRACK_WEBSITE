@@ -7,7 +7,6 @@ const navItems = [
   { label: "Transactions", icon: Receipt, to: "/transactions" },
   { label: "Budgets", icon: Wallet, to: "/budgets" },
   { label: "Analytics", icon: BarChart2, to: "/analytics" },
-  { label: "Imports",icon: ImportIcon, to:"/csv"},
   { label: "Profile", icon: User, to: "/profile" },
 ];
 

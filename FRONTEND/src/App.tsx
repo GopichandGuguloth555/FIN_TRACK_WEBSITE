@@ -13,7 +13,7 @@ import TransactionsPage from "../src/pages/transaction";
 import BudgetsPage from "../src/pages/budjet";
 import AnalyticsPage from "../src/pages/analytics";
 import ProfilePage from "../src/pages/profile";
-import CsvPage from "../src/pages/csv";
+
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem("token");
@@ -44,7 +44,6 @@ export default function App() {
           <Route path="budgets" element={<BudgetsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="profile" element={<ProfilePage />} />
-          <Route path="csv" element={<CsvPage />} />
         </Route>
 
       </Routes>
