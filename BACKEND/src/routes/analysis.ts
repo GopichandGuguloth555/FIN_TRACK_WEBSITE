@@ -1,11 +1,13 @@
 import express from "express";
 import { userAuth } from "../middlewares/auth";
 import { TransactionModel } from "../models/tarnsactions";
+import { UserModel } from "../models/User";
+import { Request, Response,NextFunction } from "express";
+import premiumOnly from "../middlewares/premium";
 
 const router = express.Router();
 
-
-router.get("/summary", userAuth, async (req, res) => {
+router.get("/summary", userAuth, premiumOnly, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
@@ -33,7 +35,7 @@ router.get("/summary", userAuth, async (req, res) => {
   }
 });
 
-router.get("/category", userAuth, async (req, res) => {
+router.get("/category", userAuth, premiumOnly, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
@@ -78,7 +80,7 @@ router.get("/category", userAuth, async (req, res) => {
   }
 });
 
-router.get("/insights", userAuth, async (req, res) => {
+router.get("/insights", userAuth, premiumOnly, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
@@ -123,7 +125,7 @@ router.get("/insights", userAuth, async (req, res) => {
   }
 });
 
-router.get("/stats/monthly", userAuth, async (req, res) => {
+router.get("/stats/monthly", userAuth, premiumOnly, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;

@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
-
 const CATEGORIES = [
   "Food",
   "Travel",
@@ -47,15 +46,18 @@ const MONTHS = [
 
 interface AddBudgetDialogProps {
   onSuccess?: () => void;
+  onLimitReached: () => void;
 }
 
-export default function AddBudgetDialog({ onSuccess }: AddBudgetDialogProps) {
+export default function AddBudgetDialog({
+  onSuccess,
+  onLimitReached,
+}: AddBudgetDialogProps) {
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState("");
   const [month, setMonth] = useState("");
   const [amount, setAmount] = useState<number | "">("");
   const [loading, setLoading] = useState(false);
-
 
   const handleSave = async () => {
     if (!category || !month || !amount) {
@@ -71,7 +73,7 @@ export default function AddBudgetDialog({ onSuccess }: AddBudgetDialogProps) {
         "http://localhost:5000/budget",
         {
           category,
-          month,   // YYYY-MM
+          month,
           amount,
         },
         {
@@ -88,14 +90,20 @@ export default function AddBudgetDialog({ onSuccess }: AddBudgetDialogProps) {
       setOpen(false);
 
       onSuccess?.();
-    } catch (error) {
-      console.error("Failed to create budget", error);
+    } catch (err: any) {
+      // 🔒 Budget limit hit
+      if (err.response?.status === 403) {
+        setOpen(false);
+        onLimitReached();
+        return;
+      }
+
+      console.error("Failed to create budget", err);
       alert("Failed to create budget");
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -111,7 +119,6 @@ export default function AddBudgetDialog({ onSuccess }: AddBudgetDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-
           {/* Category */}
           <Select value={category} onValueChange={setCategory}>
             <SelectTrigger>
@@ -155,7 +162,6 @@ export default function AddBudgetDialog({ onSuccess }: AddBudgetDialogProps) {
           >
             {loading ? "Saving..." : "Save Budget"}
           </Button>
-
         </div>
       </DialogContent>
     </Dialog>

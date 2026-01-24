@@ -19,9 +19,13 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
   onAdded: () => void;
+  onLimitReached: () => void;
 }
 
-export default function AddTransactionDialog({ onAdded }: Props) {
+export default function AddTransactionDialog({
+  onAdded,
+  onLimitReached,
+}: Props) {
   const [open, setOpen] = useState(false);
   const [type, setType] = useState("");
   const [category, setCategory] = useState("");
@@ -41,15 +45,20 @@ export default function AddTransactionDialog({ onAdded }: Props) {
 
       onAdded();
       setOpen(false);
-    } catch (err) {
+    } catch (err: any) {
+      
+      if (err.response?.status === 403) {
+        setOpen(false);
+        onLimitReached();
+        return;
+      }
+
       console.log("Add Transaction Error:", err);
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      
-      {/* IMPORTANT: Button must be single — NO nested button */}
       <DialogTrigger asChild>
         <Button className="text-white hover:bg-purple-800">
           + Add Transaction
@@ -62,7 +71,6 @@ export default function AddTransactionDialog({ onAdded }: Props) {
         </DialogHeader>
 
         <div className="space-y-3 mt-3">
-
           <Select onValueChange={setType}>
             <SelectTrigger>
               <SelectValue placeholder="Select Type" />
@@ -106,7 +114,10 @@ export default function AddTransactionDialog({ onAdded }: Props) {
             placeholder="Description"
           />
 
-          <Button className="w-full bg-purple-700 text-white" onClick={handleAdd}>
+          <Button
+            className="w-full bg-purple-700 text-white"
+            onClick={handleAdd}
+          >
             Save
           </Button>
         </div>

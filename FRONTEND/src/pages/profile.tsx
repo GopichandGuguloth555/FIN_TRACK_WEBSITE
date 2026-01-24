@@ -7,7 +7,7 @@ export default function ProfilePage() {
         My Profile
       </h1>
 
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <ProfileCard />
       </div>
     </div>

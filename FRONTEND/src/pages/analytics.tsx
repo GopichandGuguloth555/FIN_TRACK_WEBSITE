@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-
+import { Link } from "react-router-dom";
 import AnalyticsSummary from "../components/analytics/summaryCards";
 import CategoryPieChart from "../components/analytics/piechart";
 import ExpenseTrendChart from "../components/analytics/expensesTrendChart";
 import InsightsBox from "../components/analytics/insights";
 
+
 export default function AnalyticsPage() {
   const [summary, setSummary] = useState<any>(null);
   const [activeMonth, setActiveMonth] = useState<string>("");
+  const [isPremium, setIsPremium] = useState<boolean>(true);
 
   useEffect(() => {
     detectLatestMonth();
@@ -26,6 +28,12 @@ export default function AnalyticsPage() {
         }
       );
 
+      // 🔒 Premium check
+      if (res.status === 403) {
+        setIsPremium(false);
+        return;
+      }
+
       const json = await res.json();
 
       if (!json.stats || json.stats.length === 0) return;
@@ -39,7 +47,6 @@ export default function AnalyticsPage() {
     }
   };
 
-  // 2️⃣ Fetch summary for that month
   const fetchSummary = async (month: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -53,6 +60,11 @@ export default function AnalyticsPage() {
         }
       );
 
+      if (res.status === 403) {
+        setIsPremium(false);
+        return;
+      }
+
       const json = await res.json();
       setSummary(json);
     } catch (error) {
@@ -60,13 +72,30 @@ export default function AnalyticsPage() {
     }
   };
 
-  if (!summary) {
+  // 🔒 Free user view
+  if (!isPremium) {
+    return (
+      <div className="text-center space-y-4 mt-10">
+        <p className="text-lg">Analytics is a Premium feature</p>
+        <Link to="/pricing">
+        <button
+          onClick={handleUpgrade}
+          className="px-4 py-2 bg-black text-white rounded"
+        >
+          Upgrade to Premium
+        </button>
+        </Link>
+      </div>
+    );
+  }
+
+  // ⏳ Loading
+  if (!summary || !activeMonth) {
     return <p className="text-center">Loading analytics...</p>;
   }
 
   return (
     <div className="space-y-6">
-
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <AnalyticsSummary
@@ -85,7 +114,7 @@ export default function AnalyticsPage() {
         />
       </div>
 
-      {/* Charts */}
+      {/* Charts (render only when month exists) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
           <ExpenseTrendChart />
@@ -101,3 +130,17 @@ export default function AnalyticsPage() {
     </div>
   );
 }
+
+
+const handleUpgrade = async () => {
+  const token = localStorage.getItem("token");
+
+  await fetch("http://localhost:5000/users/upgrade", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  window.location.reload();
+};

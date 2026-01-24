@@ -7,7 +7,16 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function ExpenseTrendChart({ data }: { data: any[] }) {
+interface Props {
+  data?: any[];
+}
+
+export default function ExpenseTrendChart({ data = [] }: Props) {
+  // 🔒 safety guard
+  if (!data || data.length === 0) {
+    return null;
+  }
+
   const chartData = data.map((d) => ({
     month: d._id,
     expense: d.totalExpense,

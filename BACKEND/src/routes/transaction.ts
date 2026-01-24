@@ -1,10 +1,12 @@
 import express from "express";
 import { userAuth } from "../middlewares/auth";
 import { TransactionModel } from "../models/tarnsactions";
+import { UserModel } from "../models/User";
 
 const router = express.Router();
 
 router.post("/", userAuth, async (req, res) => {
+
   try {
     const { type, category, amount, date, description } = req.body;
 
@@ -17,12 +19,27 @@ router.post("/", userAuth, async (req, res) => {
     // @ts-ignore
     const userId = req.user.id;
 
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+      });
+    }
+
+    const transactionCount = await TransactionModel.countDocuments({ userId });
+
+    if (!user.isPremium && transactionCount >= 5) {
+      return res.status(403).json({
+        message: "Upgrade to premium to add more transactions!",
+      });
+    }
+
     const transaction = await TransactionModel.create({
       userId,
-      type,                    
-      category,                
+      type,
+      category,
       amount,
-      date: new Date(date),    
+      date: new Date(date),
       description,
     });
 

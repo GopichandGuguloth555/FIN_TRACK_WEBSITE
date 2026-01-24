@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import AddTransactionDialog from "../components/transactions/transactionDialog";
-import TransactionFilters, { FilterState } from "../components/transactions/transactionFilters";
+import TransactionFilters, {FilterState,} from "../components/transactions/transactionFilters";
 import TransactionTable from "../components/transactions/transactionTable";
 
 import { Transaction } from "@/types/transactions";
@@ -17,7 +17,6 @@ export default function TransactionsPage() {
     sort: "",
   });
 
- 
   async function fetchData() {
     try {
       const token = localStorage.getItem("token");
@@ -27,15 +26,12 @@ export default function TransactionsPage() {
       });
 
       const data = res.data as { data: Transaction[] };
-
       setTransactions(data.data);
     } catch (err) {
       console.error("Fetch Error:", err);
     }
   }
 
- 
-  
   async function deleteTransaction(id: string) {
     try {
       const token = localStorage.getItem("token");
@@ -51,16 +47,21 @@ export default function TransactionsPage() {
   }
 
 
+  const handleLimitReached = () => {
+    window.location.href = "/pricing";
+  };
+
   const filteredData = transactions.filter((t) => {
     return (
       (filters.search === "" ||
         t.category.toLowerCase().includes(filters.search.toLowerCase()) ||
-        (t.description || "").toLowerCase().includes(filters.search.toLowerCase())) &&
+        (t.description || "")
+          .toLowerCase()
+          .includes(filters.search.toLowerCase())) &&
       (filters.category === "" || t.category === filters.category) &&
       (filters.type === "" || t.type === filters.type)
     );
   });
-
 
   const sortedData = [...filteredData].sort((a, b) => {
     if (filters.sort === "amountHigh") return b.amount - a.amount;
@@ -76,7 +77,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="space-y-4">
-
       <div className="flex justify-between items-start">
         <TransactionFilters
           search={filters.search}
@@ -86,7 +86,11 @@ export default function TransactionsPage() {
           onSort={(v) => setFilters({ ...filters, sort: v })}
         />
 
-        <AddTransactionDialog onAdded={fetchData} />
+        {/* 🔒 pass limit handler */}
+        <AddTransactionDialog
+          onAdded={fetchData}
+          onLimitReached={handleLimitReached}
+        />
       </div>
 
       <TransactionTable

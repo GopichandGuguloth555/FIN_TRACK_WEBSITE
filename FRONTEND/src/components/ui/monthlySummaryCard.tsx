@@ -8,24 +8,49 @@ interface SummaryResponse {
 
 export default function MonthlySummary() {
   const [data, setData] = useState<SummaryResponse | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     const fetchSummary = async () => {
-      const token = localStorage.getItem("token");
+      try {
+        const token = localStorage.getItem("token");
 
-      const res = await fetch("http://localhost:5000/analytics/summary", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+        const res = await fetch("http://localhost:5000/analytics/summary", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-      const json = await res.json();
-      setData(json);
+        if (res.status === 403) {
+          setIsLocked(true);
+          return;
+        }
+
+        if (res.status !== 200) return;
+
+        const json = await res.json();
+        setData(json);
+      } catch (error) {
+        console.error("Failed to fetch monthly summary", error);
+      }
     };
 
     fetchSummary();
   }, []);
 
+  // 🔒 Free user view
+  if (isLocked) {
+    return (
+      <div className="w-full rounded-2xl p-6 bg-white border border-gray-200 shadow-sm text-center">
+        <h3 className="text-lg font-semibold mb-2">Monthly Summary</h3>
+        <p className="text-gray-500">
+          Upgrade to Premium to view monthly summary
+        </p>
+      </div>
+    );
+  }
+
+  // ⏳ Loading
   if (!data) return null;
 
   return (

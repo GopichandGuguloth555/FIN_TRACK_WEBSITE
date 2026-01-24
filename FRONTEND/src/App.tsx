@@ -13,6 +13,7 @@ import TransactionsPage from "../src/pages/transaction";
 import BudgetsPage from "../src/pages/budjet";
 import AnalyticsPage from "../src/pages/analytics";
 import ProfilePage from "../src/pages/profile";
+import PricingPage from "./pages/pricing";
 
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -44,6 +45,7 @@ export default function App() {
           <Route path="budgets" element={<BudgetsPage />} />
           <Route path="analytics" element={<AnalyticsPage />} />
           <Route path="profile" element={<ProfilePage />} />
+          <Route path="pricing" element={<PricingPage/>}/>
         </Route>
 
       </Routes>

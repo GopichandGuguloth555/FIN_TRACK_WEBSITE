@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 import BudgetCard from "../components/budjets/budjetCard";
 import BudgetFilters from "../components/budjets/budjetFilters";
@@ -15,6 +16,8 @@ interface Budget {
 }
 
 export default function BudgetsPage() {
+  const navigate = useNavigate();
+
   const [budgets, setBudgets] = useState<Budget[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,14 +33,11 @@ export default function BudgetsPage() {
     try {
       const token = localStorage.getItem("token");
 
-      const res = await axios.get(
-        "http://localhost:5000/budget",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const res = await axios.get("http://localhost:5000/budget", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       
       //@ts-ignore
       setBudgets(res.data.data);
@@ -68,19 +68,21 @@ export default function BudgetsPage() {
     try {
       const token = localStorage.getItem("token");
 
-      await axios.delete(
-        `http://localhost:5000/budget/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`http://localhost:5000/budget/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       fetchBudgets();
     } catch (error) {
       console.error("Delete failed", error);
     }
+  };
+
+  // 🔒 Correct redirect
+  const handleBudgetLimit = () => {
+    navigate("/pricing");
   };
 
   if (loading) {
@@ -93,14 +95,15 @@ export default function BudgetsPage() {
 
   return (
     <div className="space-y-4">
-
-      {/* Filters + Add */}
       <div className="flex justify-between items-center">
         <BudgetFilters onChange={setFilters} />
-        <AddBudgetDialog onSuccess={fetchBudgets} />
+
+        <AddBudgetDialog
+          onSuccess={fetchBudgets}
+          onLimitReached={handleBudgetLimit}
+        />
       </div>
 
-      {/* Budget Cards */}
       {filteredBudgets.length === 0 ? (
         <p className="text-center text-brand-textMuted">
           No budgets found
@@ -123,7 +126,6 @@ export default function BudgetsPage() {
         </div>
       )}
 
-      {/* Edit Dialog */}
       <EditBudgetDialog
         open={editOpen}
         budget={editBudget}

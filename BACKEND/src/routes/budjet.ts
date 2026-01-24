@@ -1,7 +1,8 @@
 import express from "express";
 import { BudjetModel } from "../models/bujet";
 import { TransactionModel } from "../models/tarnsactions";
-import { userAuth } from "../middlewares/auth";
+import { userAuth } from "../middlewares/auth"; 
+import { UserModel } from "../models/User";
 
 const router = express.Router();
 
@@ -16,6 +17,24 @@ router.post("/", userAuth, async (req, res) => {
 
     // @ts-ignore
     const userId = req.user.id;
+
+    const user= await UserModel.findById(userId);
+
+    if( !user )
+    {
+      return res.status(404).json({
+        message: "User not found!"
+      })
+    }
+
+const budgetCount = await BudjetModel.countDocuments({ userId });
+
+    if(!user.isPremium && budgetCount >= 2)
+    {
+        return res.status(403).json({
+          message:" Upgrade to Premimum to create more budgets!"
+        })
+    }
 
     const budget = await BudjetModel.create({
       userId,
@@ -33,7 +52,6 @@ router.post("/", userAuth, async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
 
 router.get("/", userAuth, async (req, res) => {
   try {
@@ -81,7 +99,6 @@ router.get("/", userAuth, async (req, res) => {
     res.status(500).json({ message: "Failed to fetch budgets" });
   }
 });
-
 
 router.get("/health", userAuth, async (req, res) => {
   try {
@@ -183,5 +200,7 @@ router.delete("/:id", userAuth, async (req, res) => {
     res.status(500).json({ message: "Failed to delete budget" });
   }
 });
+
+
 
 export default router;
