@@ -2,10 +2,8 @@ import express from "express";
 import cors from "cors";
 import { connectDB } from "./db";
 import userRoutes from "./routes/userIndex";
-import transactionRoutes from "./routes/transaction";
-import budgetRoutes from "./routes/budjet";
-import analyticRoutes from "./routes/analysis";
-
+import importsRoutes from "./routes/import";
+import analytics from "./routes/analysis";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -29,9 +27,10 @@ app.use("/uploads", express.static("uploads"));
 connectDB();
 
 app.use("/user", userRoutes);
-app.use("/transactions", transactionRoutes);
-app.use("/budget", budgetRoutes);
-app.use("/analytics", analyticRoutes);
+app.use("/imports", importsRoutes);
+app.use("/analytics", analytics);
+
+
 
 
 app.get("/", (req, res) => {

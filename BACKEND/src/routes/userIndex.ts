@@ -177,43 +177,4 @@ router.post("/logout", userAuth, async (req: Request, res: Response) => {
   }
 });
 
-router.post("/upgrade", userAuth, async (req, res) => {
-  try {
-    // @ts-ignore
-    const userId = req.user.id;
-
-    const user = await UserModel.findById(userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    user.isPremium = true;
-    await user.save();
-
-    res.status(200).json({
-      message: "Upgraded to premium successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to upgrade to premium",
-    });
-  }
-});
-
-router.get("/me", userAuth, async (req, res) => {
-  // @ts-ignore
-  const userId = req.user.id;
-
-  const user = await UserModel.findById(userId).select("isPremium");
-  if (!user) {
-    return res.status(404).json({ message: "User not found" });
-  }
-
-  res.json({
-    isPremium: user.isPremium,
-  });
-});
-
-
-
 export default router;

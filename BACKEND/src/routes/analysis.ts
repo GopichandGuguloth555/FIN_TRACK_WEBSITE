@@ -1,148 +1,81 @@
 import express from "express";
 import { userAuth } from "../middlewares/auth";
-import { TransactionModel } from "../models/tarnsactions";
-import { UserModel } from "../models/User";
-import { Request, Response,NextFunction } from "express";
-import premiumOnly from "../middlewares/premium";
+import { ImportedTransactionModel } from "../models/importTransaction";
 
 const router = express.Router();
 
-router.get("/summary", userAuth, premiumOnly, async (req, res) => {
+router.get("/summary", userAuth, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
 
-    const transactions = await TransactionModel.find({ userId }).lean();
+    const txs = await ImportedTransactionModel.find({ userId });
 
-    let totalIncome = 0;
-    let totalExpense = 0;
+    let income = 0;
+    let expense = 0;
 
-    for (const t of transactions) {
-      if (t.type === "income") totalIncome += t.amount;
-      if (t.type === "expense") totalExpense += t.amount;
+    for (const t of txs) {
+      if (t.type === "income") income += t.amount;
+      else expense += t.amount;
     }
 
-    const balance = totalIncome - totalExpense;
-
-    res.status(200).json({
-      totalIncome,
-      totalExpense,
-      balance,
+    res.json({
+      totalIncome: income,
+      totalExpense: expense,
+      balance: income - expense,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while fetching summary" });
+    res.status(500).json({ message: "Failed to fetch summary" });
   }
 });
 
-router.get("/category", userAuth, premiumOnly, async (req, res) => {
-  try {
-    // @ts-ignore
-    const userId = req.user.id;
-    const { type } = req.query;
-
-    if (type !== "income" && type !== "expense") {
-      return res.status(400).json({
-        message: "Please provide a valid type: 'income' or 'expense'",
-      });
-    }
-
-    const transactions = await TransactionModel.find({
-      userId,
-      type,
-    }).lean();
-
-    const categoryTotals: Record<string, number> = {};
-
-    for (const t of transactions) {
-      if (!t.category) continue;
-
-      categoryTotals[t.category] =
-        (categoryTotals[t.category] || 0) + t.amount;
-    }
-
-    const result = Object.entries(categoryTotals).map(
-      ([category, total]) => ({
-        category,
-        total,
-      })
-    );
-
-    res.status(200).json({
-      type,
-      data: result,
-    });
-  } catch (error) {
-    console.error(error);
-    res
-      .status(500)
-      .json({ message: "Server error while fetching category data" });
-  }
-});
-
-router.get("/insights", userAuth, premiumOnly, async (req, res) => {
+router.get("/category", userAuth, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
 
-    const transactions = await TransactionModel.find({ userId }).lean();
+    const data = await ImportedTransactionModel.aggregate([
+      { $match: { userId, type: "expense" } },
+      {
+        $group: {
+          _id: "$category",
+          total: { $sum: "$amount" },
+        },
+      },
+      { $sort: { total: -1 } },
+    ]);
 
-    const monthlyTotals: Record<
-      string,
-      { totalIncome: number; totalExpense: number }
-    > = {};
-
-    for (const t of transactions) {
-      if (!t.date) continue;
-
-      const month = t.date.toISOString().slice(0, 7);
-
-      if (!monthlyTotals[month]) {
-        monthlyTotals[month] = { totalIncome: 0, totalExpense: 0 };
-      }
-
-      if (t.type === "income") {
-        monthlyTotals[month].totalIncome += t.amount;
-      } else if (t.type === "expense") {
-        monthlyTotals[month].totalExpense += t.amount;
-      }
-    }
-
-    const trends = Object.entries(monthlyTotals)
-      .map(([month, data]) => ({
-        month,
-        totalIncome: data.totalIncome,
-        totalExpense: data.totalExpense,
+    res.json(
+      data.map((d) => ({
+        category: d._id,
+        total: d.total,
       }))
-      .sort((a, b) => a.month.localeCompare(b.month));
-
-    res.status(200).json({
-      data: trends,
-    });
+    );
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Server error while fetching insights" });
+    res.status(500).json({ message: "Category analytics failed" });
   }
 });
 
-router.get("/stats/monthly", userAuth, premiumOnly, async (req, res) => {
+router.get("/monthly", userAuth, async (req, res) => {
   try {
     // @ts-ignore
     const userId = req.user.id;
 
-    const stats = await TransactionModel.aggregate([
+    const data = await ImportedTransactionModel.aggregate([
       { $match: { userId } },
       {
         $group: {
           _id: {
             $dateToString: { format: "%Y-%m", date: "$date" },
           },
-          totalIncome: {
+          income: {
             $sum: {
               $cond: [{ $eq: ["$type", "income"] }, "$amount", 0],
             },
           },
-          totalExpense: {
+          expense: {
             $sum: {
               $cond: [{ $eq: ["$type", "expense"] }, "$amount", 0],
             },
@@ -152,10 +85,16 @@ router.get("/stats/monthly", userAuth, premiumOnly, async (req, res) => {
       { $sort: { _id: 1 } },
     ]);
 
-    res.json({ stats });
+    res.json(
+      data.map((d) => ({
+        month: d._id,
+        income: d.income,
+        expense: d.expense,
+      }))
+    );
   } catch (error) {
-    console.error("Error fetching monthly stats:", error);
-    res.status(500).json({ message: "Failed to fetch monthly stats" });
+    console.error(error);
+    res.status(500).json({ message: "Monthly analytics failed" });
   }
 });
 
