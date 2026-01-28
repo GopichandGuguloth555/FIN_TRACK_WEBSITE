@@ -4,6 +4,7 @@ import path from "path";
 import csv from "csv-parser";
 import xlsx from "xlsx";
 import pdf from "pdf-parse";
+import mongoose from "mongoose";
 import { userAuth } from "../middlewares/auth";
 import { upload } from "../middlewares/upload";
 import { ImportedTransactionModel } from "../models/importTransaction";
@@ -49,7 +50,14 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
 
 router.post("/parse/:batchId", userAuth, async (req, res) => {
   try {
-    const { batchId } = req.params;
+    
+    const batchId = req.params.batchId.replace(/\s+/g, "");
+
+
+    if (!mongoose.Types.ObjectId.isValid(batchId)) {
+      return res.status(400).json({ message: "Invalid batchId" });
+    }
+
     // @ts-ignore
     const userId = req.user.id;
 
@@ -62,6 +70,9 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
     if (!fs.existsSync(filePath)) {
       return res.status(400).json({ message: "File missing" });
     }
+
+    batch.status = "processing";
+    await batch.save();
 
     let rows: any[] = [];
 
@@ -86,15 +97,32 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
       const buffer = fs.readFileSync(filePath);
       //@ts-ignore
       const data = await pdf(buffer);
+
+      const regex =
+        /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}).*?([\d,]+\.\d{2})/;
+
       rows = data.text
         .split("\n")
         //@ts-ignore
-        .map((line) => ({
-          description: line,
-          amount: 0,
-          type: "expense",
-          date: new Date(),
-        }))
+        .map((line) => {
+          const match = line.match(regex);
+          if (!match) return null;
+
+          const lower = line.toLowerCase();
+          const type =
+            lower.includes("cr") ||
+            lower.includes("credit") ||
+            lower.includes("salary")
+              ? "income"
+              : "expense";
+
+          return {
+            date: match[1],
+            amount: match[2],
+            description: line.trim(),
+            type,
+          };
+        })
         .filter(Boolean);
     }
 
@@ -103,19 +131,26 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
 
     for (const row of rows) {
       try {
+       
+        if (!row.date || !row.amount || !row.type) {
+          failed++;
+          continue;
+        }
+
         await ImportedTransactionModel.create({
           userId,
           date: new Date(row.date),
           description: row.description || "",
-          amount: Number(row.amount || 0),
-          type: row.type || "expense",
+          amount: Number(String(row.amount).replace(/,/g, "")),
+          type: row.type,
           category: "Others",
           source: batch.source,
           importBatchId: batch._id,
           rawRow: row,
         });
+
         success++;
-      } catch {
+      } catch (err) {
         failed++;
       }
     }
@@ -126,7 +161,12 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
     batch.failedCount = failed;
     await batch.save();
 
-    res.json({ success, failed });
+    res.json({
+      message: "Parse completed",
+      total: rows.length,
+      success,
+      failed,
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Parse failed" });
