@@ -33,8 +33,8 @@ export default function DashboardLayout({
       icon: <IconChartBar className="text-neutral-700 dark:text-neutral-200" />,
     },
     {
-      label: "Settings",
-      to: "/settings",
+      label: "ProfilePage",
+      to: "/profile",
       icon: <IconSettings className="text-neutral-700 dark:text-neutral-200" />,
     },
   ];
