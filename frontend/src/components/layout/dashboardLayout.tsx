@@ -1,10 +1,15 @@
-import {Sidebar,SidebarBody,SidebarLink,} from '@/components/ui/sidebar'
+import {
+  Sidebar,
+  SidebarBody,
+  SidebarLink,
+} from "@/components/ui/sidebar";
 import {
   IconHome,
   IconCreditCard,
   IconChartBar,
   IconSettings,
 } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 
 export default function DashboardLayout({
   children,
@@ -14,22 +19,22 @@ export default function DashboardLayout({
   const links = [
     {
       label: "Dashboard",
-      href: "/dashboard",
+      to: "/dashboard",
       icon: <IconHome className="text-neutral-700 dark:text-neutral-200" />,
     },
     {
       label: "Transactions",
-      href: "/transactions",
+      to: "/transactions",
       icon: <IconCreditCard className="text-neutral-700 dark:text-neutral-200" />,
     },
     {
       label: "Analytics",
-      href: "/analytics",
+      to: "/analytics",
       icon: <IconChartBar className="text-neutral-700 dark:text-neutral-200" />,
     },
     {
       label: "Settings",
-      href: "/settings",
+      to: "/settings",
       icon: <IconSettings className="text-neutral-700 dark:text-neutral-200" />,
     },
   ];
@@ -39,10 +44,16 @@ export default function DashboardLayout({
       <Sidebar>
         <SidebarBody className="justify-between">
           {/* Top */}
-         
-          <div className="flex flex-col gap-10 font-2xl ">
+          <div className="flex flex-col gap-10 font-2xl">
             {links.map((link, idx) => (
-              <SidebarLink key={idx} link={link} />
+              <Link to={link.to} key={idx}>
+                <SidebarLink
+                  link={{
+                    label: link.label,
+                    icon: link.icon,
+                  }}
+                />
+              </Link>
             ))}
           </div>
 
