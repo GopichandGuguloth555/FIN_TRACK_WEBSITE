@@ -1,7 +1,7 @@
 import { useState } from "react";
 import logo from "/logo.png";
+import {Link} from "react-router-dom";
 
-/* ---------------- INPUT ---------------- */
 const Input = ({
   placeholder,
   type = "text",
@@ -28,7 +28,6 @@ const Input = ({
   );
 };
 
-/* ---------------- SOCIAL ICONS ---------------- */
 const socialIcons = [
   {
     icon: (
@@ -65,7 +64,6 @@ const socialIcons = [
   },
 ];
 
-/* ---------------- PAGE ---------------- */
 const Page = () => {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   const [hover, setHover] = useState(false);
