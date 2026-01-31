@@ -1,14 +1,12 @@
 "use client";
+
 import { cn } from "@/lib/utils";
 import React, { useState, createContext, useContext } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { IconMenu2, IconX } from "@tabler/icons-react";
+import { Link, useLocation } from "react-router-dom";
 
-interface Links {
-  label: string;
-  href: string;
-  icon: React.ReactNode;
-}
+/* ===================== TYPES ===================== */
 
 interface SidebarContextProps {
   open: boolean;
@@ -16,19 +14,27 @@ interface SidebarContextProps {
   animate: boolean;
 }
 
+interface SidebarLinkProps {
+  label: string;
+  href: string;
+  icon: React.ReactNode;
+}
+
+/* ===================== CONTEXT ===================== */
+
 const SidebarContext = createContext<SidebarContextProps | undefined>(undefined);
 
 export const useSidebar = () => {
-  const context = useContext(SidebarContext);
-  if (!context) throw new Error("useSidebar must be used within SidebarProvider");
-  return context;
+  const ctx = useContext(SidebarContext);
+  if (!ctx) throw new Error("useSidebar must be used within SidebarProvider");
+  return ctx;
 };
 
 export const SidebarProvider = ({
   children,
   open: openProp,
   setOpen: setOpenProp,
-  animate = false,
+  animate = true,
 }: {
   children: React.ReactNode;
   open?: boolean;
@@ -36,15 +42,21 @@ export const SidebarProvider = ({
   animate?: boolean;
 }) => {
   const [openState, setOpenState] = useState(false);
-  const open = openProp ?? openState;
-  const setOpen = setOpenProp ?? setOpenState;
 
   return (
-    <SidebarContext.Provider value={{ open, setOpen, animate }}>
+    <SidebarContext.Provider
+      value={{
+        open: openProp ?? openState,
+        setOpen: setOpenProp ?? setOpenState,
+        animate,
+      }}
+    >
       {children}
     </SidebarContext.Provider>
   );
 };
+
+/* ===================== ROOT ===================== */
 
 export const Sidebar = ({
   children,
@@ -64,39 +76,99 @@ export const Sidebar = ({
   );
 };
 
-export const SidebarBody = (props: React.ComponentProps<typeof motion.div>) => {
+export const SidebarBody = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) => {
   return (
     <>
-      <DesktopSidebar {...props} />
-      <MobileSidebar {...(props as React.ComponentProps<"div">)} />
+      <DesktopSidebar className={className}>
+        {children}
+      </DesktopSidebar>
+      <MobileSidebar>
+        {children}
+      </MobileSidebar>
     </>
   );
 };
 
+
+/* ===================== DESKTOP ===================== */
 const DesktopSidebar = ({
-  className,
   children,
-  ...props
-}: React.ComponentProps<typeof motion.div>) => {
-  const { open, setOpen, animate } = useSidebar();
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) => {
+  const { open, setOpen } = useSidebar();
 
   return (
-    <motion.div
+    <motion.aside
       className={cn(
-        "hidden md:flex h-full px-4 py-4 flex-col w-[300px] shrink-0 bg-neutral-900/30 rounded-xl backdrop-blur-xl border-r border-white/10",
+        `
+        hidden md:flex h-screen flex-col
+        bg-neutral-900/70 backdrop-blur-xl
+        border-r border-white/10
+        `,
         className
       )}
-      animate={{ width: animate ? (open ? "300px" : "64px") : "300px" }}
+      animate={{ width: open ? 220 : 72 }}
+      transition={{ type: "spring", stiffness: 260, damping: 28 }}
       onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-      {...props}
+      onMouseLeave={() => setOpen(true)}
     >
-      {children}
-    </motion.div>
+      {/* LOGO */}
+      {/* BRAND */}
+      <div className="relative mb-10 px-4 pt-6">
+        {/* Glow */}
+        <div className="absolute -top-2 left-3 h-12 w-12 rounded-full bg-emerald-500/20 blur-2xl" />
+
+        <div className="relative flex items-center gap-3">
+          {/* Logo Box */}
+          <div className="
+      h-11 w-11 rounded-xl
+      bg-gradient-to-br from-emerald-400 to-emerald-600
+      flex items-center justify-center
+      shadow-lg shadow-emerald-500/30
+      text-black font-extrabold
+    ">
+            ₣
+          </div>
+
+          {/* Brand Text */}
+          <div className="leading-tight">
+            <h1 className="text-sm font-bold tracking-[0.2em] text-white">
+              FIN<span className="text-emerald-400">TRACK</span>
+            </h1>
+            <p className="text-[11px] text-neutral-400 tracking-wide">
+              Smart Finance Control
+            </p>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="mt-6 h-px bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+      </div>
+
+
+
+      {/* LINKS */}
+      <nav className="flex flex-col gap-1 px-2 py-4">
+        {children}
+      </nav>
+
+      {/* FOOTER SPACE */}
+      <div className="mt-auto h-16 border-t border-white/10" />
+    </motion.aside>
   );
 };
 
-const MobileSidebar = ({ children }: React.ComponentProps<"div">) => {
+
+const MobileSidebar = ({ children }: { children: React.ReactNode }) => {
   const { open, setOpen } = useSidebar();
 
   return (
@@ -109,14 +181,14 @@ const MobileSidebar = ({ children }: React.ComponentProps<"div">) => {
             initial={{ x: "-100%" }}
             animate={{ x: 0 }}
             exit={{ x: "-100%" }}
-            transition={{ duration: 0.3 }}
+            transition={{ duration: 0.25 }}
             className="fixed inset-0 z-[100] bg-neutral-950 p-6"
           >
             <IconX
-              className="text-white absolute top-6 right-6"
+              className="absolute top-6 right-6 text-white"
               onClick={() => setOpen(false)}
             />
-            {children}
+            <div className="mt-10 space-y-2">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -125,62 +197,40 @@ const MobileSidebar = ({ children }: React.ComponentProps<"div">) => {
 };
 
 
-
-export const SidebarLink = ({ link }: { link: any }) => {
-  const { open, animate } = useSidebar();
-  const isActive = window.location.pathname === link.href;
+export const SidebarLink = ({ link }: { link: SidebarLinkProps }) => {
+  const { open } = useSidebar();
+  const location = useLocation();
+  const isActive = location.pathname === link.href;
 
   return (
-    <motion.a
-      href={link.href}
-      initial={false}
-      whileHover={{
-        scale: 1.1,
-        x: 8,
-      }}
-      transition={{
-        type: "spring",
-        stiffness: 260,
-        damping: 16,
-      }}
-      className={`
-        relative flex items-center gap-4
-        py-3 px-3 rounded-xl
-        text-[15px] font-medium
-        transition-all duration-300
-        ${
-          isActive
-            ? "bg-white/15 text-white shadow-[0_0_20px_rgba(255,255,255,0.15)]"
-            : "text-neutral-400 hover:text-white hover:bg-white/10"
-        }
-      `}
-    >
-      {/* ACTIVE LEFT INDICATOR */}
-      {isActive && (
-        <span className="absolute left-0 top-1/2 -translate-y-1/2 h-6 w-[3px] rounded-full bg-white" />
-      )}
-
-      {/* ICON */}
+    <Link to={link.href}>
       <motion.div
-        whileHover={{ scale: 1.15 }}
-        transition={{ type: "spring", stiffness: 300 }}
-        className={isActive ? "text-white" : "text-neutral-400"}
+        whileHover={{ x: 6 }}
+        transition={{ type: "spring", stiffness: 300, damping: 20 }}
+        className={cn(
+          `
+          relative flex items-center gap-3
+          px-5 py-3 my-4 rounded-xl
+          text-sm font-medium transition
+          `,
+          isActive
+            ? "bg-white/15 text-white"
+            : "text-neutral-400 hover:text-white hover:bg-white/10",
+          !open && "justify-center"
+        )}
       >
-        {link.icon}
-      </motion.div>
+        {/* ACTIVE INDICATOR */}
+        {isActive && (
+          <span className="absolute left-0 h-5 w-[3px] rounded-full bg-white" />
+        )}
 
-      {/* LABEL */}
-      <motion.span
-        animate={{
-          opacity: animate ? (open ? 1 : 0) : 1,
-          display: animate ? (open ? "block" : "none") : "block",
-        }}
-        className="whitespace-nowrap"
-      >
-        {link.label}
-      </motion.span>
-    </motion.a>
+        {/* ICON */}
+        <span className="text-lg">{link.icon}</span>
+
+        {/* LABEL */}
+        {open && <span className="whitespace-nowrap">{link.label}</span>}
+        <br />
+      </motion.div>
+    </Link>
   );
 };
-
-

@@ -1,13 +1,38 @@
-const stats = [
-  { label: "Total Income", value: "₹1,20,000" },
-  { label: "Total Expense", value: "₹78,500" },
-  { label: "Net Balance", value: "₹41,500" },
-  { label: "Transactions", value: "248" },
-];
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
+
+type Summary = {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+};
 
 export default function AnalyticsStats() {
+  const [data, setData] = useState<Summary | null>(null);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      const res = await axios.get("/analytics/summary", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      setData(res.data);
+    };
+
+    fetchSummary();
+  }, []);
+
+  if (!data) return null;
+
+  const stats = [
+    { label: "Total Income", value: `₹${data.totalIncome.toLocaleString()}` },
+    { label: "Total Expense", value: `₹${data.totalExpense.toLocaleString()}` },
+    { label: "Net Balance", value: `₹${data.balance.toLocaleString()}` },
+  ];
+
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {stats.map((item) => (
         <div
           key={item.label}

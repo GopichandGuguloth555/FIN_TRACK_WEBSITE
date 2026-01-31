@@ -1,108 +1,154 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
+import { useNavigate } from "react-router-dom";
+import { IconUser, IconMail, IconLock, IconLogout } from "@tabler/icons-react";
 
 export default function ProfilePage() {
+  const navigate = useNavigate();
+
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const [userName, setUserName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      const res = await axios.get("/user/profile");
+      setUserName(res.data.user.userName);
+      setEmail(res.data.user.email);
+      setLoading(false);
+    };
+    fetchProfile();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await axios.put("/user/profile", {
+        userName,
+        ...(password && { password }),
+      });
+      setPassword("");
+      setMessage("Profile updated successfully");
+    } catch {
+      setMessage("Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await axios.post("/user/logout");
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <p className="text-neutral-400">Loading profile…</p>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
-      {/* Header */}
-      <div className="mb-8">
+      {/* HEADER */}
+      <div className="mb-10">
         <h1 className="text-2xl font-semibold">Profile</h1>
-        <p className="text-neutral-400">
-          Manage your personal information
+        <p className="text-neutral-400 mt-1">
+          Manage your account settings
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left: Profile Card */}
-        <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center text-2xl font-semibold">
-              G
-            </div>
-
-            <h2 className="mt-4 text-lg font-semibold">Gopichand</h2>
-            <p className="text-sm text-neutral-400">
-              gopichand@email.com
-            </p>
-
-            <button className="mt-4 px-4 py-2 rounded-xl bg-white/15 hover:bg-white/25 transition text-sm">
-              Change Avatar
-            </button>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* LEFT CARD */}
+        <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-8 flex flex-col items-center text-center">
+          <div className="h-24 w-24 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-3xl font-semibold">
+            {userName.charAt(0).toUpperCase()}
           </div>
+
+          <h2 className="mt-4 text-lg font-semibold">{userName}</h2>
+          <p className="text-sm text-neutral-400">{email}</p>
+
+          <button
+            onClick={handleLogout}
+            className="mt-8 flex items-center gap-2 px-4 py-2 rounded-xl bg-red-500/20 text-red-300 hover:bg-red-500/30 transition text-sm"
+          >
+            <IconLogout size={16} />
+            Logout
+          </button>
         </div>
 
-        {/* Right: Profile Form */}
-        <div className="lg:col-span-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-6">
+        {/* RIGHT FORM */}
+        <div className="lg:col-span-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-8">
           <h3 className="text-lg font-semibold mb-6">
             Personal Information
           </h3>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Name */}
+            {/* Username */}
             <div>
-              <label className="text-sm text-neutral-400">Full Name</label>
-              <input
-                type="text"
-                defaultValue="Gopichand"
-                className="mt-1 w-full rounded-xl bg-white/10 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
-              />
+              <label className="text-sm text-neutral-400">Username</label>
+              <div className="relative mt-2">
+                <IconUser size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <input
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                  className="w-full pl-9 rounded-xl bg-white/10 border border-white/10 px-4 py-2 focus:border-white/30 outline-none"
+                />
+              </div>
             </div>
 
             {/* Email */}
             <div>
               <label className="text-sm text-neutral-400">Email</label>
-              <input
-                type="email"
-                defaultValue="gopichand@email.com"
-                className="mt-1 w-full rounded-xl bg-white/10 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
-              />
+              <div className="relative mt-2">
+                <IconMail size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <input
+                  value={email}
+                  disabled
+                  className="w-full pl-9 rounded-xl bg-white/5 border border-white/10 px-4 py-2 text-neutral-400 cursor-not-allowed"
+                />
+              </div>
             </div>
 
-            {/* Phone */}
-            <div>
-              <label className="text-sm text-neutral-400">Phone</label>
-              <input
-                type="text"
-                placeholder="+91 XXXXX XXXXX"
-                className="mt-1 w-full rounded-xl bg-white/10 border border-white/10 px-4 py-2 outline-none focus:border-white/30"
-              />
-            </div>
-
-            {/* Currency */}
-            <div>
-              <label className="text-sm text-neutral-400">
-                Preferred Currency
-              </label>
-              <select className="mt-1 w-full rounded-xl bg-white/10 border border-white/10 px-4 py-2">
-                <option>INR (₹)</option>
-                <option>USD ($)</option>
-                <option>EUR (€)</option>
-              </select>
+            {/* Password */}
+            <div className="md:col-span-2">
+              <label className="text-sm text-neutral-400">New Password</label>
+              <div className="relative mt-2">
+                <IconLock size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Leave blank to keep current password"
+                  className="w-full pl-9 rounded-xl bg-white/10 border border-white/10 px-4 py-2 focus:border-white/30 outline-none"
+                />
+              </div>
             </div>
           </div>
 
-          {/* Actions */}
-          <div className="mt-8 flex justify-end gap-4">
-            <button className="px-4 py-2 rounded-xl text-sm text-neutral-400 hover:text-white transition">
-              Cancel
-            </button>
-            <button className="px-5 py-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm font-medium">
-              Save Changes
+          <div className="mt-8 flex justify-between items-center">
+            {message && (
+              <span className="text-sm text-green-400">{message}</span>
+            )}
+
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-6 py-2 rounded-xl bg-white/20 hover:bg-white/30 transition text-sm font-medium"
+            >
+              {saving ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
-      </div>
-
-      {/* Danger Zone */}
-      <div className="mt-10 rounded-2xl border border-red-500/30 bg-red-500/10 p-6">
-        <h3 className="text-lg font-semibold text-red-400 mb-2">
-          Danger Zone
-        </h3>
-        <p className="text-sm text-red-300 mb-4">
-          Logging out will end your current session.
-        </p>
-        <button className="px-4 py-2 rounded-xl bg-red-500/20 hover:bg-red-500/30 text-red-300 transition text-sm">
-          Logout
-        </button>
       </div>
     </DashboardLayout>
   );

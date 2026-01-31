@@ -26,6 +26,7 @@
     "json2csv": "^6.0.0-alpha.2",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.3",
+    "motion": "^12.29.2",
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
     "router": "^2.2.0",

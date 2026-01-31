@@ -9,6 +9,8 @@ import { userAuth } from "../middlewares/auth";
 import { upload } from "../middlewares/upload";
 import { ImportedTransactionModel } from "../models/importTransaction";
 import { ImportBatchModel } from "../models/importBatch";
+import { detectCategory } from "../utils/categeoryDetector";
+
 
 const router = express.Router();
 
@@ -50,7 +52,7 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
 
 router.post("/parse/:batchId", userAuth, async (req, res) => {
   try {
-    
+
     const batchId = req.params.batchId.replace(/\s+/g, "");
 
 
@@ -111,8 +113,8 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
           const lower = line.toLowerCase();
           const type =
             lower.includes("cr") ||
-            lower.includes("credit") ||
-            lower.includes("salary")
+              lower.includes("credit") ||
+              lower.includes("salary")
               ? "income"
               : "expense";
 
@@ -131,7 +133,7 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
 
     for (const row of rows) {
       try {
-       
+
         if (!row.date || !row.amount || !row.type) {
           failed++;
           continue;
@@ -143,7 +145,7 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
           description: row.description || "",
           amount: Number(String(row.amount).replace(/,/g, "")),
           type: row.type,
-          category: "Others",
+          category: detectCategory(row.description || ""),
           source: batch.source,
           importBatchId: batch._id,
           rawRow: row,
@@ -170,6 +172,76 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Parse failed" });
+  }
+});
+
+router.get("/batches", userAuth, async (req, res) => {
+  try {
+    // @ts-ignore
+    const userId = req.user.id;
+
+    const batches = await ImportBatchModel.find({ userId })
+      .sort({ createdAt: -1 })
+      .select(
+        "fileName source status totalRows successCount failedCount createdAt"
+      );
+
+    res.json({
+      batches,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to fetch uploaded files",
+    });
+  }
+});
+
+router.delete("/batch/:batchId", userAuth, async (req, res) => {
+  try {
+    const { batchId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(batchId)) {
+      return res.status(400).json({ message: "Invalid batchId" });
+    }
+
+    // @ts-ignore
+    const userId = req.user.id;
+
+    const batch = await ImportBatchModel.findOne({
+      _id: batchId,
+      userId,
+    });
+
+    if (!batch) {
+      return res.status(404).json({
+        message: "Batch not found",
+      });
+    }
+
+    // 1️⃣ delete transactions linked to this batch
+    await ImportedTransactionModel.deleteMany({
+      importBatchId: batch._id,
+      userId,
+    });
+
+    // 2️⃣ delete file from disk
+    const filePath = path.join("uploads", batch.fileName);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
+    // 3️⃣ delete batch record
+    await batch.deleteOne();
+
+    res.json({
+      message: "Uploaded file deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Failed to delete uploaded file",
+    });
   }
 });
 

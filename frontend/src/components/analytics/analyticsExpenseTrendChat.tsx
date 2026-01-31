@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
 import {
   LineChart,
   Line,
@@ -7,15 +9,33 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { month: "Jan", expense: 12000 },
-  { month: "Feb", expense: 18000 },
-  { month: "Mar", expense: 15000 },
-  { month: "Apr", expense: 22000 },
-  { month: "May", expense: 19500 },
-];
+type Item = {
+  month: string;
+  expense: number;
+};
 
 export default function ExpenseTrendChart() {
+  const [data, setData] = useState<Item[]>([]);
+
+  useEffect(() => {
+    const fetchMonthly = async () => {
+      const res = await axios.get("/analytics/monthly", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setData(
+        res.data.map((d: any) => ({
+          month: d.month,
+          expense: d.expense,
+        }))
+      );
+    };
+
+    fetchMonthly();
+  }, []);
+
   return (
     <div className="bg-neutral-900 border border-neutral-800 rounded-xl p-6">
       <h3 className="font-semibold mb-4">Monthly Expense Trend</h3>

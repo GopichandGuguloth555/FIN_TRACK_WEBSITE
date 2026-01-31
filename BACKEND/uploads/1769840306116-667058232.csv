@@ -1,0 +1,9 @@
+date,description,amount,type,category
+2026-01-01,Salary credited,50000,income,Salary
+2026-01-03,Grocery shopping,2200,expense,Food
+2026-01-05,Uber ride,350,expense,Travel
+2026-01-07,Electricity bill,1800,expense,Bills
+2026-01-10,Amazon purchase,2499,expense,Shopping
+2026-01-12,Freelance payment,12000,income,Freelance
+2026-01-15,Restaurant dinner,1600,expense,Food
+2026-01-18,Mobile recharge,699,expense,Bills

@@ -1,79 +1,42 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
 import {
   IconArrowUpRight,
   IconArrowDownLeft,
 } from "@tabler/icons-react";
 
-const transactions = [
-  {
-    id: 1,
-    title: "Salary",
-    date: "Jan 28, 2026",
-    amount: "+ ₹25,000",
-    type: "income",
-  },
-  {
-    id: 2,
-    title: "Groceries",
-    date: "Jan 27, 2026",
-    amount: "- ₹1,200",
-    type: "expense",
-  },
-  {
-    id: 3,
-    title: "Netflix",
-    date: "Jan 26, 2026",
-    amount: "- ₹499",
-    type: "expense",
-  },
-  {
-    id: 4,
-    title: "Freelance",
-    date: "Jan 25, 2026",
-    amount: "+ ₹8,000",
-    type: "income",
-  },
-  {
-    id: 5,
-    title: "Electricity Bill",
-    date: "Jan 24, 2026",
-    amount: "- ₹2,300",
-    type: "expense",
-  },
-  {
-    id: 6,
-    title: "Electricity Bill",
-    date: "Jan 24, 2026",
-    amount: "- ₹2,300",
-    type: "expense",
-  },
-  {
-    id: 7,
-    title: "Electricity Bill",
-    date: "Jan 24, 2026",
-    amount: "- ₹2,300",
-    type: "expense",
-  },
-];
-
 export default function RecentTransactions() {
+  const [txs, setTxs] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchTx = async () => {
+      const res = await axios.get("/transactions", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setTxs(res.data.transactions.slice(0, 7));
+    };
+
+    fetchTx();
+  }, []);
+
   return (
     <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-5">
-      {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-semibold">Recent Transactions</h2>
-        <span className="text-sm text-neutral-400 cursor-pointer hover:text-white transition">
-          View all
-        </span>
+        <span className="text-sm text-neutral-400">View all</span>
       </div>
 
-      {/* Transactions */}
       <div className="space-y-3">
-        {transactions.map((tx) => (
+        {txs.map((tx) => (
           <div
-            key={tx.id}
-            className="flex items-center justify-between rounded-xl p-3 hover:bg-white/5 transition group"
+            key={tx._id}
+            className="flex items-center justify-between rounded-xl p-3 hover:bg-white/5 transition"
           >
-            {/* Left */}
             <div className="flex items-center gap-3">
               <div
                 className={`h-10 w-10 rounded-full flex items-center justify-center
@@ -91,14 +54,13 @@ export default function RecentTransactions() {
               </div>
 
               <div>
-                <p className="font-medium group-hover:text-white transition">
-                  {tx.title}
+                <p className="font-medium">{tx.description || "—"}</p>
+                <p className="text-xs text-neutral-400">
+                  {new Date(tx.date).toDateString()}
                 </p>
-                <p className="text-xs text-neutral-400">{tx.date}</p>
               </div>
             </div>
 
-            {/* Right */}
             <p
               className={`font-semibold ${
                 tx.type === "income"
@@ -106,7 +68,8 @@ export default function RecentTransactions() {
                   : "text-red-400"
               }`}
             >
-              {tx.amount}
+              {tx.type === "income" ? "+" : "-"}₹
+              {tx.amount.toLocaleString()}
             </p>
           </div>
         ))}

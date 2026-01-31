@@ -1,21 +1,36 @@
 "use client";
 
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-} from "recharts";
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
+import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
-const data = [
-  { name: "Income", value: 85000 },
-  { name: "Expenses", value: 40000 },
-];
-
-const COLORS = ["#22c55e", "#ef4444"]; // green, red
+const COLORS = ["#22c55e", "#ef4444"];
 
 export default function IncomeExpenseRings() {
-  const total = data.reduce((acc, item) => acc + item.value, 0);
+  const [income, setIncome] = useState(0);
+  const [expense, setExpense] = useState(0);
+
+  useEffect(() => {
+    const fetchSummary = async () => {
+      const res = await axios.get("/analytics/summary", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      setIncome(res.data.totalIncome);
+      setExpense(res.data.totalExpense);
+    };
+
+    fetchSummary();
+  }, []);
+
+  const data = [
+    { name: "Income", value: income },
+    { name: "Expenses", value: expense },
+  ];
+
+  const total = income + expense;
 
   return (
     <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-6">
@@ -23,7 +38,7 @@ export default function IncomeExpenseRings() {
         Income vs Expense
       </h3>
 
-      <div className="h-48 flex items-center justify-center">
+      <div className="relative h-48 flex items-center justify-center">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -33,30 +48,18 @@ export default function IncomeExpenseRings() {
               paddingAngle={6}
               dataKey="value"
             >
-              {data.map((_, index) => (
-                <Cell key={index} fill={COLORS[index]} />
+              {data.map((_, i) => (
+                <Cell key={i} fill={COLORS[i]} />
               ))}
             </Pie>
           </PieChart>
         </ResponsiveContainer>
 
-        {/* Center Text */}
         <div className="absolute text-center">
           <p className="text-xs text-neutral-400">Total</p>
-          <p className="text-lg font-semibold">₹{total.toLocaleString()}</p>
-        </div>
-      </div>
-
-      {/* Legend */}
-      <div className="flex justify-between mt-6 text-sm">
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-green-500" />
-          <span className="text-neutral-300">Income</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="h-2 w-2 rounded-full bg-red-500" />
-          <span className="text-neutral-300">Expenses</span>
+          <p className="text-lg font-semibold">
+            ₹{total.toLocaleString()}
+          </p>
         </div>
       </div>
     </div>

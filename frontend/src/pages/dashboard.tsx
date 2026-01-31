@@ -1,10 +1,48 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
-import {IconWallet,IconArrowUpRight,IconArrowDownRight,IconReceipt,} from "@tabler/icons-react";
+import {
+  IconWallet,
+  IconArrowUpRight,
+  IconArrowDownRight,
+  IconReceipt,
+} from "@tabler/icons-react";
 import RecentTransactions from "@/components/dashboard/recentTransaction";
 import IncomeExpenseChart from "@/components/dashboard/incomeExpenseChart";
-import  IncomeExpenseRings from "@/components/dashboard/expenseRingChart"
+import IncomeExpenseRings from "@/components/dashboard/expenseRingChart";
+
+type Summary = {
+  totalIncome: number;
+  totalExpense: number;
+  balance: number;
+};
 
 export default function Dashboard() {
+  const [summary, setSummary] = useState<Summary | null>(null);
+  const [txCount, setTxCount] = useState(0);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      const token = localStorage.getItem("token");
+
+      const [summaryRes, txRes] = await Promise.all([
+        axios.get("/analytics/summary", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        axios.get("/transactions", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ]);
+
+      setSummary(summaryRes.data);
+      setTxCount(txRes.data.transactions.length);
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <DashboardLayout>
       {/* Header */}
@@ -17,36 +55,48 @@ export default function Dashboard() {
 
       {/* Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 transition">
+        {/* Balance */}
+        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10">
           <div className="flex items-center justify-between">
             <p className="text-neutral-400 text-sm">Total Balance</p>
             <IconWallet className="text-white/70" />
           </div>
-          <h2 className="text-2xl font-semibold mt-4">₹1,25,000</h2>
+          <h2 className="text-2xl font-semibold mt-4">
+            ₹{summary?.balance.toLocaleString() ?? "—"}
+          </h2>
         </div>
 
-        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 transition">
+        {/* Income */}
+        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10">
           <div className="flex items-center justify-between">
             <p className="text-neutral-400 text-sm">Income</p>
             <IconArrowUpRight className="text-green-400" />
           </div>
-          <h2 className="text-2xl font-semibold mt-4">₹85,000</h2>
+          <h2 className="text-2xl font-semibold mt-4">
+            ₹{summary?.totalIncome.toLocaleString() ?? "—"}
+          </h2>
         </div>
 
-        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 transition">
+        {/* Expense */}
+        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10">
           <div className="flex items-center justify-between">
             <p className="text-neutral-400 text-sm">Expenses</p>
             <IconArrowDownRight className="text-red-400" />
           </div>
-          <h2 className="text-2xl font-semibold mt-4">₹40,000</h2>
+          <h2 className="text-2xl font-semibold mt-4">
+            ₹{summary?.totalExpense.toLocaleString() ?? "—"}
+          </h2>
         </div>
 
-        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10 hover:bg-white/15 transition">
+        {/* Transactions */}
+        <div className="rounded-2xl p-6 bg-white/10 backdrop-blur-xl border border-white/10">
           <div className="flex items-center justify-between">
             <p className="text-neutral-400 text-sm">Transactions</p>
             <IconReceipt className="text-white/70" />
           </div>
-          <h2 className="text-2xl font-semibold mt-4">128</h2>
+          <h2 className="text-2xl font-semibold mt-4">
+            {txCount}
+          </h2>
         </div>
       </div>
 
@@ -57,11 +107,10 @@ export default function Dashboard() {
           <RecentTransactions />
         </div>
 
-        {/* RIGHT (charts next) */}
-        <div className="rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl items-center justify-center text-neutral-400">
+        {/* RIGHT */}
+        <div className="space-y-6">
           <IncomeExpenseChart />
-          <br />
-           <IncomeExpenseRings />
+          <IncomeExpenseRings />
         </div>
       </div>
     </DashboardLayout>

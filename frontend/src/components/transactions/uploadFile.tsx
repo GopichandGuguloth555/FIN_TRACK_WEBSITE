@@ -2,7 +2,11 @@ import { useState } from "react";
 import axios from "@/api/axios";
 import { Upload, FileText, CheckCircle, Loader2 } from "lucide-react";
 
-export default function UploadStatementCard() {
+export default function UploadStatementCard({
+  onClose,
+}: {
+  onClose: () => void;
+}) {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<
     "idle" | "uploading" | "success" | "error"
@@ -18,24 +22,18 @@ export default function UploadStatementCard() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await axios.post("/imports/upload", formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-          "Content-Type": "multipart/form-data",
-        },
-      });
-
+      const res = await axios.post("/imports/upload", formData);
       const batchId = res.data.batchId;
 
-      // trigger parsing
-      await axios.post(`/imports/parse/${batchId}`, {}, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      await axios.post(`/imports/parse/${batchId}`);
 
       setStatus("success");
       setMessage("Statement imported successfully 🎉");
+
+      // auto close after short delay
+      setTimeout(() => {
+        onClose();
+      }, 1200);
     } catch (err) {
       console.error(err);
       setStatus("error");
@@ -44,14 +42,13 @@ export default function UploadStatementCard() {
   };
 
   return (
-    <div className="max-w-xl mx-auto mt-16">
+    <div className="max-w-xl mx-auto mb-12">
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-8 shadow-xl">
         <h2 className="text-xl font-semibold text-white mb-2">
           Upload Bank Statement
         </h2>
         <p className="text-sm text-neutral-400 mb-6">
-          Upload your bank statement (PDF, CSV, Excel).  
-          Transactions will be parsed automatically.
+          Upload your bank statement (PDF, CSV, Excel).
         </p>
 
         {/* Upload box */}
@@ -77,7 +74,6 @@ export default function UploadStatementCard() {
           />
         </label>
 
-        {/* Selected file */}
         {file && (
           <div className="mt-4 flex items-center gap-2 text-sm text-neutral-300">
             <FileText className="w-4 h-4" />
@@ -85,7 +81,6 @@ export default function UploadStatementCard() {
           </div>
         )}
 
-        {/* Action button */}
         <button
           onClick={handleUpload}
           disabled={!file || status === "uploading"}
@@ -101,7 +96,6 @@ export default function UploadStatementCard() {
           )}
         </button>
 
-        {/* Status message */}
         {status === "success" && (
           <div className="mt-4 flex items-center gap-2 text-green-400 text-sm">
             <CheckCircle className="w-4 h-4" />
@@ -110,9 +104,7 @@ export default function UploadStatementCard() {
         )}
 
         {status === "error" && (
-          <div className="mt-4 text-red-400 text-sm">
-            {message}
-          </div>
+          <div className="mt-4 text-red-400 text-sm">{message}</div>
         )}
       </div>
     </div>

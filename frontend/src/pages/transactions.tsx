@@ -1,9 +1,12 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/dashboardLayout";
 import TransactionsTable from "@/components/transactions/transactionTable";
 import TransactionFilters from "@/components/transactions/transactionFilters";
 import UploadStatementCard from "@/components/transactions/uploadFile";
 
 export default function Transactions() {
+  const [showUpload, setShowUpload] = useState(false);
+
   return (
     <DashboardLayout>
       {/* Header */}
@@ -13,8 +16,25 @@ export default function Transactions() {
           View and manage all your transactions
         </p>
       </div>
-       <UploadStatementCard></UploadStatementCard>
-       <br />
+
+      {/* Upload section */}
+      {!showUpload ? (
+        <button
+          onClick={() => setShowUpload(true)}
+          className="
+            mx-auto mb-10 flex items-center justify-center
+            rounded-xl bg-white/10 backdrop-blur-xl
+            border border-white/10
+            px-6 py-3 text-sm font-medium
+            hover:bg-white/20 transition
+          "
+        >
+          Upload Bank Statement
+        </button>
+      ) : (
+        <UploadStatementCard onClose={() => setShowUpload(false)} />
+      )}
+
       {/* Filters */}
       <TransactionFilters />
 

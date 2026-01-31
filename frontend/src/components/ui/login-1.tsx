@@ -1,173 +1,188 @@
-import { useState } from "react";
-import logo from "/logo.png";
-import {Link} from "react-router-dom";
+"use client";
 
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import AlertBox from "@/components/ui/alert";
+import logo from "/logo.png";
+
+/* ---------- Input ---------- */
 const Input = ({
   placeholder,
   type = "text",
+  value,
+  onChange,
 }: {
   placeholder: string;
   type?: string;
-}) => {
-  return (
-    <input
-      type={type}
-      placeholder={placeholder}
-      className="
-        w-full h-12 px-4
-        rounded-md
-        bg-[#0f1418]
-        border border-[#262b30]
-        text-sm text-[#c9d1d9]
-        placeholder:text-[#6e7681]
-        outline-none
-        focus:border-[#8b949e]
-        transition
-      "
-    />
-  );
-};
+  value: string;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+}) => (
+  <input
+    type={type}
+    placeholder={placeholder}
+    value={value}
+    onChange={onChange}
+    className="
+      w-full h-12 px-4 rounded-md
+      bg-[#0f1418]
+      border border-[#262b30]
+      text-sm text-white placeholder:text-neutral-400
+      outline-none
+      focus:border-emerald-400/50
+      focus:ring-2 focus:ring-emerald-500/20
+      transition
+    "
+  />
+);
 
-const socialIcons = [
-  {
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path
-          fill="currentColor"
-          d="M7.8 2h8.4C19.4 2 22 4.6 22 7.8v8.4a5.8 5.8 0 0 1-5.8 5.8H7.8C4.6 22 2 19.4 2 16.2V7.8A5.8 5.8 0 0 1 7.8 2m-.2 2A3.6 3.6 0 0 0 4 7.6v8.8C4 18.39 5.61 20 7.6 20h8.8a3.6 3.6 0 0 0 3.6-3.6V7.6C20 5.61 18.39 4 16.4 4zm9.65 1.5a1.25 1.25 0 0 1 1.25 1.25A1.25 1.25 0 0 1 17.25 8A1.25 1.25 0 0 1 16 6.75a1.25 1.25 0 0 1 1.25-1.25M12 7a5 5 0 0 1 5 5a5 5 0 0 1-5 5a5 5 0 0 1-5-5a5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3a3 3 0 0 0 3 3a3 3 0 0 0 3-3a3 3 0 0 0-3-3"
-        />
-      </svg>
-    ),
-    href: "#",
-  },
-  {
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path
-          fill="currentColor"
-          d="M6.94 5a2 2 0 1 1-4-.002a2 2 0 0 1 4 .002M7 8.48H3V21h4zm6.32 0H9.34V21h3.94v-6.57c0-3.66 4.77-4 4.77 0V21H22v-7.93c0-6.17-7.06-5.94-8.72-2.91z"
-        />
-      </svg>
-    ),
-    href: "#",
-  },
-  {
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-        <path
-          fill="currentColor"
-          d="M9.198 21.5h4v-8.01h3.604l.396-3.98h-4V7.5a1 1 0 0 1 1-1h3v-4h-3a5 5 0 0 0-5 5v2.01h-2l-.396 3.98h2.396z"
-        />
-      </svg>
-    ),
-    href: "#",
-  },
-];
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [alert, setAlert] = useState<any>(null);
 
-const Page = () => {
-  const [pos, setPos] = useState({ x: 0, y: 0 });
-  const [hover, setHover] = useState(false);
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/user/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem("token", data.token);
+        setAlert({ message: "Login successful", type: "success" });
+        setTimeout(() => navigate("/dashboard"), 900);
+      } else {
+        setAlert({ message: data.message, type: "error" });
+      }
+    } catch {
+      setAlert({ message: "Server error", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className=" min-h-screen w-full flex items-center justify-center bg-[#0b0f12]">
-      <div className=" w-full max-w-5xl h-[560px] flex overflow-hidden rounded-xl bg-[#0f1418] shadow-2xl">
+    <>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
 
-        {/* LEFT */}
-        <div
-          className="relative w-full lg:w-1/2 h-full flex items-center justify-center px-12"
-          onMouseMove={(e) => {
-            const r = e.currentTarget.getBoundingClientRect();
-            setPos({ x: e.clientX - r.left, y: e.clientY - r.top });
-          }}
-          onMouseEnter={() => setHover(true)}
-          onMouseLeave={() => setHover(false)}
-        >
-          {/* WHITE HOVER GLOW */}
-          <div
-            className={`absolute pointer-events-none transition-opacity duration-300 ${
-              hover ? "opacity-100" : "opacity-0"
-            }`}
-            style={{inset: "-150px",
-              background: `radial-gradient(
-                400px circle at ${pos.x}px ${pos.y}px,
-                #fbfafa24,
-                rgba(255,255,255,0.08),
-                transparent 65%
-              )`,
-            }}
-          />
-
-          <form
-            className="relative z-10 w-full max-w-sm flex flex-col gap-5 text-center"
-            onSubmit={(e) => e.preventDefault()}
-          >
-            <h1 className="text-4xl font-semibold text-white">
-              Sign in
-            </h1>
-
-            {/* SOCIAL ICONS */}
-            <div className="flex justify-center gap-4">
-              {socialIcons.map((social, index) => (
-                <a
-                  key={index}
-                  href={social.href}
-                  className="
-                    group
-                    w-11 h-11
-                    rounded-full
-                    flex items-center justify-center
-                    bg-white
-                    border border-[#262b30]
-                    text-black
-                    transition-all duration-300
-                    hover:bg-[#2a2f33]
-                    hover:border-white
-                  "
-                >
-                  <span className="group-hover:text-white transition-colors duration-300">
-                    {social.icon}
-                  </span>
-                </a>
-              ))}
-            </div>
-
-            <span className="text-xl text-white">
-              or use your account
-            </span>
-
-            <Input placeholder="Email" type="email" />
-            <Input placeholder="Password" type="password" />
-
-            <a className="text-xs text-[#8b949e] hover:text-white transition">
-              Forgot your password?
-            </a>
-
-            <button
-              className="
-                mt-2 h-11 rounded-md
-                bg-[#21262d]
-                text-sm text-white
-                hover:bg-[#30363d]
-                transition
-              "
-            >
-              Sign In
-            </button>
-          </form>
+      <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f12] relative overflow-hidden">
+        {/* GREEN AMBIENT GLOW */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="h-[600px] w-[600px] rounded-full bg-emerald-500/10 blur-[220px]" />
         </div>
 
-        {/* RIGHT */}
-        <div className="hidden lg:block w-1/2 h-full relative">
-          <img
-            src={logo}
-            alt="Fintrack"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/40" />
+        <div className="relative w-full max-w-5xl h-[560px] flex overflow-hidden rounded-xl bg-[#0f1418] border border-white/10 shadow-2xl">
+          
+          {/* LEFT FORM */}
+          <div className="w-full lg:w-1/2 h-full flex items-center justify-center px-12">
+            <form
+              onSubmit={handleLogin}
+              className="w-full max-w-sm flex flex-col gap-5 text-center"
+            >
+              <h1 className="text-4xl font-semibold text-white">Sign In</h1>
+
+{/* GOOGLE LOGIN */}
+<button
+  type="button"
+  onClick={() => alert("Google login coming soon")}
+  className="
+    mt-4 h-11 w-full flex items-center justify-center gap-3
+    rounded-md
+    bg-[#0f1418]
+    border border-white/15
+    text-sm text-white
+    hover:border-emerald-400/40
+    hover:bg-white/5
+    transition
+  "
+>
+  {/* Google Icon */}
+  <svg width="18" height="18" viewBox="0 0 48 48">
+    <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8.1 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
+    <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 12 24 12c3.1 0 5.9 1.2 8.1 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
+    <path fill="#4CAF50" d="M24 44c5.1 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.7 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.4 39.7 16.2 44 24 44z"/>
+    <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3-3.4 5.4-6.3 6.9l6.2 5.2C38.6 36.7 44 31.3 44 24c0-1.3-.1-2.7-.4-3.5z"/>
+  </svg>
+
+  Continue with Google
+</button>
+
+{/* DIVIDER */}
+<div className="flex items-center gap-3 my-2">
+  <div className="h-px flex-1 bg-white/10" />
+  <span className="text-xs text-neutral-500">OR</span>
+  <div className="h-px flex-1 bg-white/10" />
+</div>
+<span className="text-neutral-400">or use your account</span>
+
+
+              <Input
+                placeholder="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+
+              <Input
+                placeholder="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="
+                  mt-2 h-11 rounded-md
+                  bg-emerald-500 text-black font-medium
+                  hover:bg-emerald-400
+                  transition
+                "
+              >
+                {loading ? "Signing In..." : "Sign In"}
+              </button>
+
+              <p className="text-sm text-neutral-400">
+                Don't have an account?{" "}
+                <span
+                  onClick={() => navigate("/signup")}
+                  className="text-emerald-400 cursor-pointer hover:underline"
+                >
+                  Sign Up
+                </span>
+              </p>
+            </form>
+          </div>
+
+          {/* RIGHT IMAGE */}
+          <div className="hidden lg:block w-1/2 h-full relative">
+            <img
+              src={logo}
+              alt="Fintrack"
+              className="w-full h-full object-cover"
+            />
+
+            {/* GREEN OVERLAY */}
+            <div className="absolute inset-0 bg-emerald-950/30 mix-blend-overlay" />
+            <div className="absolute inset-0 bg-black/50" />
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
-};
-
-export default Page;
+}

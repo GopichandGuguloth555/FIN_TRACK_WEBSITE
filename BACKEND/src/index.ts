@@ -4,6 +4,7 @@ import { connectDB } from "./db";
 import userRoutes from "./routes/userIndex";
 import importsRoutes from "./routes/import";
 import analytics from "./routes/analysis";
+import transactions from "./routes/transaction"
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -29,8 +30,7 @@ connectDB();
 app.use("/user", userRoutes);
 app.use("/imports", importsRoutes);
 app.use("/analytics", analytics);
-
-
+app.use("/transactions",transactions);
 
 
 app.get("/", (req, res) => {
