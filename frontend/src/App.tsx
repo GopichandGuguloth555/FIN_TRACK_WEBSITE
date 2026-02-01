@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/landingpage";
-import {Login} from "./pages/login";
-import {Signup} from "./pages/singnup";
+import { Login } from "./pages/login";
+import { Signup } from "./pages/singnup";
 import Dashboard from "./pages/dashboard";
 import Transactions from "./pages/transactions";
 import Analytics from "./pages/analytics";
@@ -9,6 +9,7 @@ import ProfilePage from "./pages/profilepage";
 import UploadedFiles from "./pages/uploadedFiles";
 import SessionExpired from "./pages/sessionExpired";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AuthCallback from "./pages/authCallback";
 
 export default function App() {
   return (
@@ -27,6 +28,8 @@ export default function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/files" element={<UploadedFiles />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+
         </Route>
       </Routes>
     </BrowserRouter>

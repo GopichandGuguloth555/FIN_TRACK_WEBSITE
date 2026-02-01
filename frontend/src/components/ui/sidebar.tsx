@@ -41,7 +41,7 @@ export const SidebarProvider = ({
   setOpen?: React.Dispatch<React.SetStateAction<boolean>>;
   animate?: boolean;
 }) => {
-  const [openState, setOpenState] = useState(false);
+  const [openState, setOpenState] = useState(true); // 👈 DEFAULT OPEN
 
   return (
     <SidebarContext.Provider
@@ -85,18 +85,14 @@ export const SidebarBody = ({
 }) => {
   return (
     <>
-      <DesktopSidebar className={className}>
-        {children}
-      </DesktopSidebar>
-      <MobileSidebar>
-        {children}
-      </MobileSidebar>
+      <DesktopSidebar className={className}>{children}</DesktopSidebar>
+      <MobileSidebar>{children}</MobileSidebar>
     </>
   );
 };
 
-
 /* ===================== DESKTOP ===================== */
+
 const DesktopSidebar = ({
   children,
   className,
@@ -116,57 +112,70 @@ const DesktopSidebar = ({
         `,
         className
       )}
-      animate={{ width: open ? 220 : 72 }}
+      animate={{ width: open ? 240 : 80 }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
       onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
     >
-      {/* LOGO */}
-      {/* BRAND */}
-      <div className="relative mb-10 px-4 pt-6">
+      {/* ================= BRAND ================= */}
+      <div className="relative px-4 pt-6 pb-8">
         {/* Glow */}
-        <div className="absolute -top-2 left-3 h-12 w-12 rounded-full bg-emerald-500/20 blur-2xl" />
+        <div className="absolute -top-2 left-4 h-16 w-16 rounded-full bg-emerald-500/25 blur-2xl" />
 
-        <div className="relative flex items-center gap-3">
-          {/* Logo Box */}
-          <div className="
-      h-11 w-11 rounded-xl
-      bg-gradient-to-br from-emerald-400 to-emerald-600
-      flex items-center justify-center
-      shadow-lg shadow-emerald-500/30
-      text-black font-extrabold
-    ">
+        <div
+          className={cn(
+            "relative flex items-center transition-all duration-300",
+            open ? "gap-4" : "justify-center"
+          )}
+        >
+          {/* LOGO */}
+          <div
+            className={cn(
+              `
+              rounded-xl
+              bg-gradient-to-br from-emerald-400 to-emerald-600
+              flex items-center justify-center
+              shadow-lg shadow-emerald-500/40
+              text-black font-extrabold
+              transition-all duration-300
+              `,
+              open ? "h-14 w-14 text-2xl" : "h-12 w-12 text-xl"
+            )}
+          >
             ₣
           </div>
 
-          {/* Brand Text */}
-          <div className="leading-tight">
-            <h1 className="text-sm font-bold tracking-[0.2em] text-white">
-              FIN<span className="text-emerald-400">TRACK</span>
-            </h1>
-            <p className="text-[11px] text-neutral-400 tracking-wide">
-              Smart Finance Control
-            </p>
-          </div>
+          {/* BRAND TEXT (ONLY WHEN OPEN) */}
+          {open && (
+            <div className="leading-tight animate-fade-in">
+              <h1 className="text-base font-bold tracking-[0.25em] text-white">
+                FIN<span className="text-emerald-400">TRACK</span>
+              </h1>
+              <p className="text-xs text-neutral-400 tracking-wide">
+                Smart Finance Control
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Divider */}
-        <div className="mt-6 h-px bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+        {open && (
+          <div className="mt-6 h-px bg-gradient-to-r from-white/20 via-white/5 to-transparent" />
+        )}
       </div>
 
+      {/* ================= LINKS ================= */}
+    <nav className="flex flex-col gap-4 px-3 py-4">
+  {children}
+</nav>
 
-
-      {/* LINKS */}
-      <nav className="flex flex-col gap-1 px-2 py-4">
-        {children}
-      </nav>
-
-      {/* FOOTER SPACE */}
-      <div className="mt-auto h-16 border-t border-white/10" />
+      {/* ================= FOOTER ================= */}
+      <div className="mt-auto h-14 border-t border-white/10" />
     </motion.aside>
   );
 };
 
+/* ===================== MOBILE ===================== */
 
 const MobileSidebar = ({ children }: { children: React.ReactNode }) => {
   const { open, setOpen } = useSidebar();
@@ -188,7 +197,7 @@ const MobileSidebar = ({ children }: { children: React.ReactNode }) => {
               className="absolute top-6 right-6 text-white"
               onClick={() => setOpen(false)}
             />
-            <div className="mt-10 space-y-2">{children}</div>
+            <div className="mt-10 space-y-3">{children}</div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -196,6 +205,7 @@ const MobileSidebar = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+/* ===================== LINK ===================== */
 
 export const SidebarLink = ({ link }: { link: SidebarLinkProps }) => {
   const { open } = useSidebar();
@@ -210,7 +220,7 @@ export const SidebarLink = ({ link }: { link: SidebarLinkProps }) => {
         className={cn(
           `
           relative flex items-center gap-3
-          px-5 py-3 my-4 rounded-xl
+          px-4 py-6 rounded-xl
           text-sm font-medium transition
           `,
           isActive
@@ -219,9 +229,9 @@ export const SidebarLink = ({ link }: { link: SidebarLinkProps }) => {
           !open && "justify-center"
         )}
       >
-        {/* ACTIVE INDICATOR */}
+        {/* ACTIVE BAR */}
         {isActive && (
-          <span className="absolute left-0 h-5 w-[3px] rounded-full bg-white" />
+          <span className="absolute left-0 h-5 w-[3px] rounded-full bg-emerald-400" />
         )}
 
         {/* ICON */}
@@ -229,7 +239,6 @@ export const SidebarLink = ({ link }: { link: SidebarLinkProps }) => {
 
         {/* LABEL */}
         {open && <span className="whitespace-nowrap">{link.label}</span>}
-        <br />
       </motion.div>
     </Link>
   );

@@ -10,6 +10,20 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+/* ---------- Custom Tooltip ---------- */
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (!active || !payload?.length) return null;
+
+  return (
+    <div className="rounded-lg bg-neutral-900 border border-white/10 px-3 py-2 text-xs">
+      <p className="text-neutral-400">{label}</p>
+      <p className="text-emerald-400 font-semibold">
+        ₹{payload[0].value.toLocaleString()}
+      </p>
+    </div>
+  );
+};
+
 export default function IncomeExpenseBarChart() {
   const [data, setData] = useState<any[]>([]);
 
@@ -24,7 +38,7 @@ export default function IncomeExpenseBarChart() {
       setData(
         res.data.map((d: any) => ({
           month: d.month,
-          value: d.income, // dashboard shows income trend
+          value: d.income,
         }))
       );
     };
@@ -45,14 +59,27 @@ export default function IncomeExpenseBarChart() {
               dataKey="month"
               axisLine={false}
               tickLine={false}
-              tick={{ fill: "#737373", fontSize: 12 }}
+              tick={{
+                fill: "#9ca3af", // neutral-400
+                fontSize: 12,
+              }}
             />
-            <Tooltip />
+
+            <Tooltip content={<CustomTooltip />} />
+
             <Bar
               dataKey="value"
-              fill="#2563eb"
-              radius={[6, 6, 6, 6]}
+              radius={[6, 6, 0, 0]}
+              fill="url(#incomeGradient)"
             />
+
+            {/* Gradient definition */}
+            <defs>
+              <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#34d399" />
+                <stop offset="100%" stopColor="#059669" />
+              </linearGradient>
+            </defs>
           </BarChart>
         </ResponsiveContainer>
       </div>

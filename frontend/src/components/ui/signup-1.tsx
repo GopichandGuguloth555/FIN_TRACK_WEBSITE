@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import AlertBox from "@/components/ui/alert";
 import logo from "/logo.png";
 
@@ -37,12 +37,26 @@ const Input = ({
 
 export default function SignupPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<any>(null);
+
+  /* 🔹 HANDLE GOOGLE REDIRECT */
+  useEffect(() => {
+    const token = searchParams.get("token");
+    if (token) {
+      localStorage.setItem("token", token);
+      navigate("/dashboard", { replace: true });
+    }
+  }, []);
+
+  const handleGoogleSignup = () => {
+    window.location.href = "http://localhost:5000/auth/google";
+  };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,9 +73,9 @@ export default function SignupPage() {
 
       if (res.ok) {
         setAlert({ message: "Account created successfully", type: "success" });
-        setTimeout(() => navigate("/login"), 1000);
+        setTimeout(() => navigate("/login"), 800);
       } else {
-        setAlert({ message: data.message || "Signup failed", type: "error" });
+        setAlert({ message: data.message, type: "error" });
       }
     } catch {
       setAlert({ message: "Server error", type: "error" });
@@ -81,28 +95,22 @@ export default function SignupPage() {
       )}
 
       <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f12] relative overflow-hidden">
-        {/* GREEN AMBIENT GLOW */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="h-[600px] w-[600px] rounded-full bg-emerald-500/10 blur-[220px]" />
         </div>
 
         <div className="relative w-full max-w-5xl h-[560px] flex overflow-hidden rounded-xl bg-[#0f1418] border border-white/10 shadow-2xl">
-
-          {/* LEFT FORM */}
+          {/* LEFT */}
           <div className="w-full lg:w-1/2 h-full flex items-center justify-center px-12">
             <form
               onSubmit={handleSignup}
               className="w-full max-w-sm flex flex-col gap-5 text-center"
             >
               <h1 className="text-4xl font-semibold text-white">Create Account</h1>
-              <span className="text-neutral-400">
-                join FIN-TRACK and start tracking smarter
-              </span>
 
-              {/* GOOGLE SIGNUP */}
               <button
                 type="button"
-                onClick={() => alert("Google signup coming soon")}
+                onClick={handleGoogleSignup}
                 className="
                   mt-4 h-11 w-full flex items-center justify-center gap-3
                   rounded-md
@@ -114,16 +122,9 @@ export default function SignupPage() {
                   transition
                 "
               >
-                <svg width="18" height="18" viewBox="0 0 48 48">
-                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.2 8.1 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.7-.4-3.5z"/>
-                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.5 16 18.9 12 24 12c3.1 0 5.9 1.2 8.1 3.1l5.7-5.7C34.3 6.1 29.4 4 24 4c-7.7 0-14.4 4.3-17.7 10.7z"/>
-                  <path fill="#4CAF50" d="M24 44c5.1 0 9.9-1.9 13.5-5.1l-6.2-5.2C29.4 35.7 26.8 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.4 39.7 16.2 44 24 44z"/>
-                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1.1 3-3.4 5.4-6.3 6.9l6.2 5.2C38.6 36.7 44 31.3 44 24c0-1.3-.1-2.7-.4-3.5z"/>
-                </svg>
                 Continue with Google
               </button>
 
-              {/* DIVIDER */}
               <div className="flex items-center gap-3 my-2">
                 <div className="h-px flex-1 bg-white/10" />
                 <span className="text-xs text-neutral-500">OR</span>
@@ -153,14 +154,9 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="
-                  mt-2 h-11 rounded-md
-                  bg-emerald-500 text-black font-medium
-                  hover:bg-emerald-400
-                  transition
-                "
+                className="mt-2 h-11 rounded-md bg-emerald-500 text-black font-medium hover:bg-emerald-400 transition"
               >
-                {loading ? "Creating account..." : "Sign Up"}
+                {loading ? "Creating..." : "Sign Up"}
               </button>
 
               <p className="text-sm text-neutral-400">
@@ -175,13 +171,9 @@ export default function SignupPage() {
             </form>
           </div>
 
-          {/* RIGHT IMAGE */}
+          {/* RIGHT */}
           <div className="hidden lg:block w-1/2 h-full relative">
-            <img
-              src={logo}
-              alt="Fintrack"
-              className="w-full h-full object-cover"
-            />
+            <img src={logo} alt="Fintrack" className="w-full h-full object-cover" />
             <div className="absolute inset-0 bg-emerald-950/30 mix-blend-overlay" />
             <div className="absolute inset-0 bg-black/50" />
           </div>

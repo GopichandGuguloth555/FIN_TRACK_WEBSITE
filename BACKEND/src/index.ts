@@ -5,6 +5,11 @@ import userRoutes from "./routes/userIndex";
 import importsRoutes from "./routes/import";
 import analytics from "./routes/analysis";
 import transactions from "./routes/transaction"
+import passport from "./config/passport";
+import authRoutes from "./routes/auth";
+
+
+
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -31,6 +36,11 @@ app.use("/user", userRoutes);
 app.use("/imports", importsRoutes);
 app.use("/analytics", analytics);
 app.use("/transactions",transactions);
+app.use(passport.initialize());
+app.use("/auth", authRoutes);
+
+
+
 
 
 app.get("/", (req, res) => {
