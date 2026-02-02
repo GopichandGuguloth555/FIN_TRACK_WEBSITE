@@ -21,6 +21,8 @@ export default function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/sessionExpired" element={<SessionExpired />} />
 
+        <Route path="/auth/callback" element={<AuthCallback />} />
+
         {/* PROTECTED ROUTES */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -28,8 +30,6 @@ export default function App() {
           <Route path="/analytics" element={<Analytics />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/files" element={<UploadedFiles />} />
-          <Route path="/auth/callback" element={<AuthCallback />} />
-
         </Route>
       </Routes>
     </BrowserRouter>

@@ -36,7 +36,7 @@ router.get(
         return res.redirect(`${FRONTEND_URL}/login`);
       }
 
-      // 🔍 Find user by email
+   
       let user = await UserModel.findOne({ email });
 
       if (user) {
@@ -56,7 +56,7 @@ router.get(
         });
       }
 
-      // 🔐 CREATE JWT
+     
       const token = jwt.sign(
         { id: user._id, email: user.email },
         JWT_SECRET,

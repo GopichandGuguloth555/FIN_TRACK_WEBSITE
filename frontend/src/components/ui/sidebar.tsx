@@ -112,15 +112,15 @@ const DesktopSidebar = ({
         `,
         className
       )}
-      animate={{ width: open ? 240 : 80 }}
+      animate={{ width: open ? 300 : 100 }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
       onMouseEnter={() => setOpen(true)}
       onMouseLeave={() => setOpen(false)}
     >
       {/* ================= BRAND ================= */}
-      <div className="relative px-4 pt-6 pb-8">
+      <div className=" pt-10 relative px-4 pt-6 pb-8">
         {/* Glow */}
-        <div className="absolute -top-2 left-4 h-16 w-16 rounded-full bg-emerald-500/25 blur-2xl" />
+        <div className="absolute -top-2 left-4 h-16 w-32 rounded-full bg-emerald-500/25 blur-2xl" />
 
         <div
           className={cn(
@@ -132,7 +132,7 @@ const DesktopSidebar = ({
           <div
             className={cn(
               `
-              rounded-xl
+              rounded-[100%]
               bg-gradient-to-br from-emerald-400 to-emerald-600
               flex items-center justify-center
               shadow-lg shadow-emerald-500/40
@@ -148,7 +148,7 @@ const DesktopSidebar = ({
           {/* BRAND TEXT (ONLY WHEN OPEN) */}
           {open && (
             <div className="leading-tight animate-fade-in">
-              <h1 className="text-base font-bold tracking-[0.25em] text-white">
+              <h1 className="text-base text-5xl font-extra-bold tracking-[0.25em] text-white">
                 FIN<span className="text-emerald-400">TRACK</span>
               </h1>
               <p className="text-xs text-neutral-400 tracking-wide">

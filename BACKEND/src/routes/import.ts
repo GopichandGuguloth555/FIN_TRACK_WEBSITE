@@ -3,16 +3,36 @@ import fs from "fs";
 import path from "path";
 import csv from "csv-parser";
 import xlsx from "xlsx";
-import pdf from "pdf-parse";
 import mongoose from "mongoose";
+import pdfParse from "pdf-parse";
+
 import { userAuth } from "../middlewares/auth";
 import { upload } from "../middlewares/upload";
 import { ImportedTransactionModel } from "../models/importTransaction";
 import { ImportBatchModel } from "../models/importBatch";
 import { detectCategory } from "../utils/categeoryDetector";
 
-
 const router = express.Router();
+
+
+function parseDateSafe(dateStr: string): Date | null {
+  if (!dateStr) return null;
+
+  // dd/mm/yyyy or dd-mm-yyyy
+  if (dateStr.includes("/") || dateStr.includes("-")) {
+    const parts = dateStr.split(/[\/\-]/);
+    if (parts.length === 3) {
+      const [d, m, y] = parts;
+      const year = y.length === 2 ? `20${y}` : y;
+      const parsed = new Date(`${year}-${m}-${d}`);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+  }
+
+  const parsed = new Date(dateStr);
+  return isNaN(parsed.getTime()) ? null : parsed;
+}
+
 
 router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
   try {
@@ -27,8 +47,8 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
       req.file.mimetype === "application/pdf"
         ? "pdf"
         : req.file.mimetype.includes("csv")
-          ? "csv"
-          : "excel";
+        ? "csv"
+        : "excel";
 
     const batch = await ImportBatchModel.create({
       userId,
@@ -46,15 +66,12 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
     console.error(err);
     res.status(500).json({ message: "Upload failed" });
   }
-}
-);
+});
 
 
 router.post("/parse/:batchId", userAuth, async (req, res) => {
   try {
-
-    const batchId = req.params.batchId.replace(/\s+/g, "");
-
+    const batchId = req.params.batchId.trim();
 
     if (!mongoose.Types.ObjectId.isValid(batchId)) {
       return res.status(400).json({ message: "Invalid batchId" });
@@ -78,6 +95,7 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
 
     let rows: any[] = [];
 
+    /* ---------- CSV ---------- */
     if (batch.source === "csv") {
       rows = await new Promise<any[]>((resolve, reject) => {
         const results: any[] = [];
@@ -89,32 +107,35 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
       });
     }
 
+    /* ---------- EXCEL ---------- */
     if (batch.source === "excel") {
       const wb = xlsx.readFile(filePath);
       const sheet = wb.Sheets[wb.SheetNames[0]];
       rows = xlsx.utils.sheet_to_json(sheet);
     }
 
+    /* ---------- PDF (FIXED & TS SAFE) ---------- */
     if (batch.source === "pdf") {
+
       const buffer = fs.readFileSync(filePath);
       //@ts-ignore
-      const data = await pdf(buffer);
+      const data = await pdfParse(buffer);
 
       const regex =
-        /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}).*?([\d,]+\.\d{2})/;
+        /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}).*?([\d,]+(\.\d{2})?)/;
 
       rows = data.text
         .split("\n")
-        //@ts-ignore
-        .map((line) => {
+        .map((line: string) => {
           const match = line.match(regex);
           if (!match) return null;
 
           const lower = line.toLowerCase();
           const type =
             lower.includes("cr") ||
-              lower.includes("credit") ||
-              lower.includes("salary")
+            lower.includes("credit") ||
+            lower.includes("salary") ||
+            lower.includes("deposit")
               ? "income"
               : "expense";
 
@@ -126,24 +147,31 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
           };
         })
         .filter(Boolean);
+
+      if (rows.length === 0) {
+        return res.status(400).json({
+          message: "No transactions detected in PDF",
+        });
+      }
     }
 
     let success = 0;
     let failed = 0;
 
+    /* ---------- INSERT TRANSACTIONS ---------- */
     for (const row of rows) {
       try {
-
-        if (!row.date || !row.amount || !row.type) {
+        const parsedDate = parseDateSafe(row.date);
+        if (!parsedDate || !row.amount || !row.type) {
           failed++;
           continue;
         }
 
         await ImportedTransactionModel.create({
           userId,
-          date: new Date(row.date),
+          date: parsedDate,
           description: row.description || "",
-          amount: Number(String(row.amount).replace(/,/g, "")),
+          amount: Number(String(row.amount).replace(/[₹,]/g, "")),
           type: row.type,
           category: detectCategory(row.description || ""),
           source: batch.source,
@@ -152,7 +180,7 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
         });
 
         success++;
-      } catch (err) {
+      } catch {
         failed++;
       }
     }
@@ -175,6 +203,9 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
   }
 });
 
+/* =====================================================
+   LIST BATCHES
+===================================================== */
 router.get("/batches", userAuth, async (req, res) => {
   try {
     // @ts-ignore
@@ -186,9 +217,7 @@ router.get("/batches", userAuth, async (req, res) => {
         "fileName source status totalRows successCount failedCount createdAt"
       );
 
-    res.json({
-      batches,
-    });
+    res.json({ batches });
   } catch (error) {
     console.error(error);
     res.status(500).json({
@@ -197,6 +226,9 @@ router.get("/batches", userAuth, async (req, res) => {
   }
 });
 
+/* =====================================================
+   DELETE BATCH
+===================================================== */
 router.delete("/batch/:batchId", userAuth, async (req, res) => {
   try {
     const { batchId } = req.params;
@@ -208,35 +240,22 @@ router.delete("/batch/:batchId", userAuth, async (req, res) => {
     // @ts-ignore
     const userId = req.user.id;
 
-    const batch = await ImportBatchModel.findOne({
-      _id: batchId,
-      userId,
-    });
-
+    const batch = await ImportBatchModel.findOne({ _id: batchId, userId });
     if (!batch) {
-      return res.status(404).json({
-        message: "Batch not found",
-      });
+      return res.status(404).json({ message: "Batch not found" });
     }
 
-    // 1️⃣ delete transactions linked to this batch
     await ImportedTransactionModel.deleteMany({
       importBatchId: batch._id,
       userId,
     });
 
-    // 2️⃣ delete file from disk
     const filePath = path.join("uploads", batch.fileName);
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-    // 3️⃣ delete batch record
     await batch.deleteOne();
 
-    res.json({
-      message: "Uploaded file deleted successfully",
-    });
+    res.json({ message: "Uploaded file deleted successfully" });
   } catch (error) {
     console.error(error);
     res.status(500).json({

@@ -13,7 +13,7 @@ export default function AuthCallback() {
     if (token) {
       localStorage.setItem("token", token);
 
-      // 🔥 HARD redirect replacement (no back button issue)
+      
       navigate("/dashboard", { replace: true });
     } else {
       navigate("/login", { replace: true });

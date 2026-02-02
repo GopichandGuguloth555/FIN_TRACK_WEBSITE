@@ -51,7 +51,7 @@ export default function ProfilePage() {
   const handleLogout = async () => {
     await axios.post("/user/logout");
     localStorage.removeItem("token");
-    navigate("/login");
+    navigate("/");
   };
 
   if (loading) {

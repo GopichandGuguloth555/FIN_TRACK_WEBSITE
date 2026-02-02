@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AlertBox from "@/components/ui/alert";
 import logo from "/logo.png";
 
@@ -37,7 +37,6 @@ const Input = ({
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
@@ -45,19 +44,12 @@ export default function SignupPage() {
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<any>(null);
 
-  /* 🔹 HANDLE GOOGLE REDIRECT */
-  useEffect(() => {
-    const token = searchParams.get("token");
-    if (token) {
-      localStorage.setItem("token", token);
-      navigate("/dashboard", { replace: true });
-    }
-  }, []);
-
+  /* 🔹 GOOGLE SIGNUP */
   const handleGoogleSignup = () => {
     window.location.href = "http://localhost:5000/auth/google";
   };
 
+  /* 🔹 MANUAL SIGNUP */
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -75,7 +67,7 @@ export default function SignupPage() {
         setAlert({ message: "Account created successfully", type: "success" });
         setTimeout(() => navigate("/login"), 800);
       } else {
-        setAlert({ message: data.message, type: "error" });
+        setAlert({ message: data.message || "Signup failed", type: "error" });
       }
     } catch {
       setAlert({ message: "Server error", type: "error" });
@@ -95,6 +87,7 @@ export default function SignupPage() {
       )}
 
       <div className="min-h-screen w-full flex items-center justify-center bg-[#0b0f12] relative overflow-hidden">
+        {/* GREEN GLOW */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="h-[600px] w-[600px] rounded-full bg-emerald-500/10 blur-[220px]" />
         </div>
@@ -106,8 +99,11 @@ export default function SignupPage() {
               onSubmit={handleSignup}
               className="w-full max-w-sm flex flex-col gap-5 text-center"
             >
-              <h1 className="text-4xl font-semibold text-white">Create Account</h1>
+              <h1 className="text-4xl font-semibold text-white">
+                Create Account
+              </h1>
 
+              {/* GOOGLE SIGNUP */}
               <button
                 type="button"
                 onClick={handleGoogleSignup}
@@ -125,6 +121,7 @@ export default function SignupPage() {
                 Continue with Google
               </button>
 
+              {/* DIVIDER */}
               <div className="flex items-center gap-3 my-2">
                 <div className="h-px flex-1 bg-white/10" />
                 <span className="text-xs text-neutral-500">OR</span>
@@ -154,7 +151,12 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="mt-2 h-11 rounded-md bg-emerald-500 text-black font-medium hover:bg-emerald-400 transition"
+                className="
+                  mt-2 h-11 rounded-md
+                  bg-emerald-500 text-black font-medium
+                  hover:bg-emerald-400
+                  transition
+                "
               >
                 {loading ? "Creating..." : "Sign Up"}
               </button>
@@ -173,7 +175,11 @@ export default function SignupPage() {
 
           {/* RIGHT */}
           <div className="hidden lg:block w-1/2 h-full relative">
-            <img src={logo} alt="Fintrack" className="w-full h-full object-cover" />
+            <img
+              src={logo}
+              alt="Fintrack"
+              className="w-full h-full object-cover"
+            />
             <div className="absolute inset-0 bg-emerald-950/30 mix-blend-overlay" />
             <div className="absolute inset-0 bg-black/50" />
           </div>
