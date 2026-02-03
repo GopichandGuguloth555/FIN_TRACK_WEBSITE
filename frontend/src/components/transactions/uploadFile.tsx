@@ -4,8 +4,10 @@ import { Upload, FileText, CheckCircle, Loader2 } from "lucide-react";
 
 export default function UploadStatementCard({
   onClose,
+  onUploadSuccess,
 }: {
   onClose: () => void;
+  onUploadSuccess?: () => void;
 }) {
   const [file, setFile] = useState<File | null>(null);
   const [status, setStatus] = useState<
@@ -30,7 +32,8 @@ export default function UploadStatementCard({
       setStatus("success");
       setMessage("Statement imported successfully 🎉");
 
-      // auto close after short delay
+      onUploadSuccess?.();
+
       setTimeout(() => {
         onClose();
       }, 1200);
@@ -51,7 +54,6 @@ export default function UploadStatementCard({
           Upload your bank statement (PDF, CSV, Excel).
         </p>
 
-        {/* Upload box */}
         <label className="flex flex-col items-center justify-center gap-3 border border-dashed border-neutral-700 rounded-xl p-8 cursor-pointer hover:border-neutral-500 transition">
           <Upload className="w-8 h-8 text-neutral-400" />
           <span className="text-neutral-300 text-sm">

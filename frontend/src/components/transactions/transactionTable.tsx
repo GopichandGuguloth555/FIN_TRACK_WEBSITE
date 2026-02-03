@@ -13,19 +13,25 @@ type Tx = {
   amount: number;
 };
 
-export default function TransactionsTable() {
+type Props = {
+  refreshKey?: number;
+};
+
+export default function TransactionsTable({ refreshKey = 0 }: Props) {
   const [transactions, setTransactions] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchTx = async () => {
       try {
+        setLoading(true);
         const res = await axios.get("/transactions", {
+          params: { limit: 500 },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         });
-        setTransactions(res.data.transactions);
+        setTransactions(res.data.transactions || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -34,7 +40,7 @@ export default function TransactionsTable() {
     };
 
     fetchTx();
-  }, []);
+  }, [refreshKey]);
 
   if (loading) {
     return (
@@ -47,12 +53,10 @@ export default function TransactionsTable() {
   return (
     <div className="mt-8 max-w-8xl mx-auto">
       <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 overflow-hidden shadow-lg">
-        {/* Header */}
         <div className="px-6 py-4 border-b border-white/10">
           <h2 className="text-lg font-semibold">Recent Transactions</h2>
         </div>
 
-        {/* Table */}
         <table className="w-full text-sm">
           <thead className="text-neutral-400">
             <tr>
@@ -75,17 +79,12 @@ export default function TransactionsTable() {
                   animate-row
                 "
               >
-                {/* Description */}
                 <td className="px-6 py-4 font-medium">
                   {tx.description || "—"}
                 </td>
-
-                {/* Date */}
                 <td className="px-6 py-4 text-neutral-400">
                   {new Date(tx.date).toDateString()}
                 </td>
-
-                {/* Type */}
                 <td className="px-6 py-4">
                   <span
                     className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-medium
@@ -103,8 +102,6 @@ export default function TransactionsTable() {
                     {tx.type}
                   </span>
                 </td>
-
-                {/* Amount */}
                 <td
                   className={`px-6 py-4 text-right font-semibold
                   ${
@@ -122,7 +119,6 @@ export default function TransactionsTable() {
         </table>
       </div>
 
-      {/* Row animation */}
       <style>{`
         @keyframes rowFade {
           from {
@@ -134,7 +130,6 @@ export default function TransactionsTable() {
             transform: translateY(0);
           }
         }
-
         .animate-row {
           animation: rowFade 0.4s ease forwards;
         }

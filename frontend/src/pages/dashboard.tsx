@@ -62,7 +62,7 @@ export default function Dashboard() {
             <IconWallet className="text-white/70" />
           </div>
           <h2 className="text-2xl font-semibold mt-4">
-            ₹{summary?.balance.toLocaleString() ?? "—"}
+            ₹{(summary?.balance ?? 0).toLocaleString()}
           </h2>
         </div>
 
@@ -73,7 +73,7 @@ export default function Dashboard() {
             <IconArrowUpRight className="text-green-400" />
           </div>
           <h2 className="text-2xl font-semibold mt-4">
-            ₹{summary?.totalIncome.toLocaleString() ?? "—"}
+            ₹{(summary?.totalIncome ?? 0).toLocaleString()}
           </h2>
         </div>
 
@@ -84,7 +84,7 @@ export default function Dashboard() {
             <IconArrowDownRight className="text-red-400" />
           </div>
           <h2 className="text-2xl font-semibold mt-4">
-            ₹{summary?.totalExpense.toLocaleString() ?? "—"}
+            ₹{(summary?.totalExpense ?? 0).toLocaleString()}
           </h2>
         </div>
 
@@ -94,9 +94,7 @@ export default function Dashboard() {
             <p className="text-neutral-400 text-sm">Transactions</p>
             <IconReceipt className="text-white/70" />
           </div>
-          <h2 className="text-2xl font-semibold mt-4">
-            {txCount}
-          </h2>
+          <h2 className="text-2xl font-semibold mt-4">{txCount}</h2>
         </div>
       </div>
 

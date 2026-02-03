@@ -4,7 +4,6 @@ import path from "path";
 import csv from "csv-parser";
 import xlsx from "xlsx";
 import mongoose from "mongoose";
-import pdfParse from "pdf-parse";
 
 import { userAuth } from "../middlewares/auth";
 import { upload } from "../middlewares/upload";
@@ -14,25 +13,104 @@ import { detectCategory } from "../utils/categeoryDetector";
 
 const router = express.Router();
 
+const MONTH_NAMES: Record<string, string> = {
+  Jan: "01", Feb: "02", Mar: "03", Apr: "04", May: "05", Jun: "06",
+  Jul: "07", Aug: "08", Sep: "09", Oct: "10", Nov: "11", Dec: "12",
+};
 
-function parseDateSafe(dateStr: string): Date | null {
+function parseDateSafe(dateStr: any): Date | null {
   if (!dateStr) return null;
 
-  // dd/mm/yyyy or dd-mm-yyyy
-  if (dateStr.includes("/") || dateStr.includes("-")) {
-    const parts = dateStr.split(/[\/\-]/);
-    if (parts.length === 3) {
-      const [d, m, y] = parts;
-      const year = y.length === 2 ? `20${y}` : y;
-      const parsed = new Date(`${year}-${m}-${d}`);
-      return isNaN(parsed.getTime()) ? null : parsed;
-    }
+  if (typeof dateStr === "number") {
+    const excelEpoch = new Date(1899, 11, 30);
+    return new Date(excelEpoch.getTime() + dateStr * 86400000);
   }
 
-  const parsed = new Date(dateStr);
-  return isNaN(parsed.getTime()) ? null : parsed;
+  if (typeof dateStr === "string") {
+    const s = dateStr.trim();
+
+    if (s.includes("/") || s.includes("-")) {
+      const parts = s.split(/[\/\-]/).map((p: string) => p.trim());
+      if (parts.length === 3) {
+        let year: string;
+        let month: string;
+        let day: string;
+
+        if (parts[0].length === 4) {
+          [year, month, day] = parts;
+        } else {
+          const [d, m, y] = parts;
+          year = y.length === 2 ? `20${y}` : y;
+          month = m;
+          day = d;
+        }
+
+        if (MONTH_NAMES[month]) {
+          month = MONTH_NAMES[month];
+        }
+        if (day.length === 1) day = "0" + day;
+        if (month.length === 1) month = "0" + month;
+        const parsed = new Date(`${year}-${month}-${day}`);
+        return isNaN(parsed.getTime()) ? null : parsed;
+      }
+    }
+
+    const ddmmyy = s.match(/^(\d{1,2})\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*,?\s*(\d{2,4})$/i);
+    if (ddmmyy) {
+      const [, day, mon, year] = ddmmyy;
+      const month = MONTH_NAMES[mon.slice(0, 3)];
+      const y = year.length === 2 ? `20${year}` : year;
+      const parsed = new Date(`${y}-${month}-${day.padStart(2, "0")}`);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const mmmddyy = s.match(/^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+(\d{1,2})\s*,?\s*(\d{2,4})$/i);
+    if (mmmddyy) {
+      const [, mon, day, year] = mmmddyy;
+      const month = MONTH_NAMES[mon.slice(0, 3)];
+      const y = year.length === 2 ? `20${year}` : year;
+      const parsed = new Date(`${y}-${month}-${day.padStart(2, "0")}`);
+      return isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    const parsed = new Date(s);
+    return isNaN(parsed.getTime()) ? null : parsed;
+  }
+
+  return null;
 }
 
+function getFirstDefined<T = any>(row: any, keys: string[]): T | undefined {
+  for (const key of keys) {
+    if (row[key] !== undefined && row[key] !== null && row[key] !== "") {
+      return row[key] as T;
+    }
+  }
+  return undefined;
+}
+
+function normalizeAmount(raw: any): number | null {
+  if (raw === undefined || raw === null || raw === "") return null;
+  const num = Number(String(raw).replace(/[₹,\s]/g, ""));
+  return isNaN(num) ? null : num;
+}
+
+function detectTypeFromPdfLine(text: string): "income" | "expense" {
+  const t = text.toLowerCase();
+  if (
+    t.includes("cr ") ||
+    t.includes(" credit") ||
+    t.includes("credit ") ||
+    t.includes("salary") ||
+    t.includes("deposit") ||
+    t.includes("refund") ||
+    t.includes("reversal") ||
+    /\bcr\b/.test(t)
+  ) {
+    return "income";
+  }
+  return "expense";
+}
 
 router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
   try {
@@ -43,10 +121,9 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const source =
-      req.file.mimetype === "application/pdf"
-        ? "pdf"
-        : req.file.mimetype.includes("csv")
+    const source = req.file.mimetype.includes("pdf")
+      ? "pdf"
+      : req.file.mimetype.includes("csv")
         ? "csv"
         : "excel";
 
@@ -68,7 +145,6 @@ router.post("/upload", userAuth, upload.single("file"), async (req, res) => {
   }
 });
 
-
 router.post("/parse/:batchId", userAuth, async (req, res) => {
   try {
     const batchId = req.params.batchId.trim();
@@ -85,7 +161,9 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
       return res.status(404).json({ message: "Batch not found" });
     }
 
-    const filePath = path.join("uploads", batch.fileName);
+    const uploadsDir = path.join(__dirname, "..", "..", "uploads");
+    const filePath = path.join(uploadsDir, batch.fileName);
+
     if (!fs.existsSync(filePath)) {
       return res.status(400).json({ message: "File missing" });
     }
@@ -95,7 +173,6 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
 
     let rows: any[] = [];
 
-    /* ---------- CSV ---------- */
     if (batch.source === "csv") {
       rows = await new Promise<any[]>((resolve, reject) => {
         const results: any[] = [];
@@ -107,50 +184,70 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
       });
     }
 
-    /* ---------- EXCEL ---------- */
     if (batch.source === "excel") {
       const wb = xlsx.readFile(filePath);
       const sheet = wb.Sheets[wb.SheetNames[0]];
       rows = xlsx.utils.sheet_to_json(sheet);
     }
 
-    /* ---------- PDF (FIXED & TS SAFE) ---------- */
     if (batch.source === "pdf") {
-
+      const { PDFParse } = require("pdf-parse");
       const buffer = fs.readFileSync(filePath);
-      //@ts-ignore
-      const data = await pdfParse(buffer);
+      const parser = new PDFParse({ data: buffer });
+      let text = "";
+      try {
+        const textResult = await parser.getText();
+        text = textResult?.text ?? "";
+      } finally {
+        await parser.destroy();
+      }
 
-      const regex =
-        /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}).*?([\d,]+(\.\d{2})?)/;
+      const lines = text.split(/\r?\n/).map((l: string) => l.trim()).filter(Boolean);
 
-      rows = data.text
-        .split("\n")
-        .map((line: string) => {
-          const match = line.match(regex);
-          if (!match) return null;
+      const dateRegex = /\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{1,2}[\/\-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\/\-]\d{2,4}|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s*,?\s*\d{2,4}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2}\s*,?\s*\d{2,4}/gi;
+      const amountRegex = /(?:₹\s*)?([\d,]+(?:\.\d{1,2})?)\s*(Cr|Dr)?/gi;
 
-          const lower = line.toLowerCase();
-          const type =
-            lower.includes("cr") ||
-            lower.includes("credit") ||
-            lower.includes("salary") ||
-            lower.includes("deposit")
-              ? "income"
-              : "expense";
+      for (let i = 0; i < lines.length; i++) {
+        let combined = lines[i];
+        if (i + 1 < lines.length && combined.length < 80 && /^\d{1,2}[\-\/]|\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2}/i.test(combined)) {
+          combined = combined + " " + lines[i + 1];
+          if (i + 2 < lines.length && !/^(?:₹\s*)?[\d,]+(?:\.\d{1,2})?\s*(Cr|Dr)?\s*$/i.test(lines[i + 1])) {
+            combined = combined + " " + lines[i + 2];
+          }
+        }
 
-          return {
-            date: match[1],
-            amount: match[2],
-            description: line.trim(),
-            type,
-          };
-        })
-        .filter(Boolean);
+        const dateMatch = combined.match(dateRegex);
+        const amountMatches = [...combined.matchAll(amountRegex)];
 
-      if (rows.length === 0) {
-        return res.status(400).json({
-          message: "No transactions detected in PDF",
+        if (!dateMatch || dateMatch.length === 0 || !amountMatches || amountMatches.length === 0) continue;
+
+        const dateStr = dateMatch[0].trim();
+        const parsedDate = parseDateSafe(dateStr);
+        if (!parsedDate) continue;
+
+        const lastAmount = amountMatches[amountMatches.length - 1];
+        const amountStr = lastAmount[1].replace(/,/g, "");
+        const amount = Number(amountStr);
+        if (isNaN(amount) || amount <= 0) continue;
+
+        const rawCrDr = (lastAmount[2] || "").trim().toLowerCase();
+        let type: "income" | "expense" = detectTypeFromPdfLine(combined);
+        if (rawCrDr === "cr") type = "income";
+        else if (rawCrDr === "dr") type = "expense";
+
+        let description = combined
+          .replace(dateRegex, " ")
+          .replace(amountRegex, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+        if (description.length > 500) description = description.slice(0, 500);
+        if (!description) description = "Transaction";
+
+        rows.push({
+          date: dateStr,
+          amount,
+          type,
+          description,
         });
       }
     }
@@ -158,11 +255,97 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
     let success = 0;
     let failed = 0;
 
-    /* ---------- INSERT TRANSACTIONS ---------- */
     for (const row of rows) {
       try {
-        const parsedDate = parseDateSafe(row.date);
-        if (!parsedDate || !row.amount || !row.type) {
+        const rawDate =
+          getFirstDefined(row, [
+            "date",
+            "Date",
+            "DATE",
+            "Txn Date",
+            "Transaction Date",
+            "Value Date",
+          ]) ?? null;
+
+        const parsedDate = parseDateSafe(rawDate);
+
+        const description =
+          getFirstDefined<string>(row, [
+            "description",
+            "Description",
+            "Narration",
+            "Details",
+            "Transaction Details",
+            "Particulars",
+            "title",
+            "Title",
+          ]) || "";
+
+        const creditRaw = getFirstDefined(row, [
+          "credit",
+          "Credit",
+          "CREDIT",
+          "Credit Amount",
+          "Cr",
+          "CR",
+        ]);
+        const debitRaw = getFirstDefined(row, [
+          "debit",
+          "Debit",
+          "DEBIT",
+          "Debit Amount",
+          "Dr",
+          "DR",
+        ]);
+        const amountRaw = getFirstDefined(row, [
+          "amount",
+          "Amount",
+          "Transaction Amount",
+          "AMOUNT",
+        ]);
+
+        let amount: number | null = null;
+        let txType: "income" | "expense" | null = null;
+
+        const credit = normalizeAmount(creditRaw);
+        const debit = normalizeAmount(debitRaw);
+        const generic = normalizeAmount(amountRaw);
+
+        const explicitType = getFirstDefined(row, [
+          "type",
+          "Type",
+          "transactionType",
+          "Transaction Type",
+        ]);
+        if (explicitType) {
+          const t = String(explicitType).trim().toLowerCase();
+          if (t === "income" || t === "expense") {
+            txType = t as "income" | "expense";
+          }
+        }
+
+        if (credit !== null && credit !== 0) {
+          amount = credit;
+          if (!txType) txType = "income";
+        } else if (debit !== null && debit !== 0) {
+          amount = debit;
+          if (!txType) txType = "expense";
+        } else if (generic !== null && generic !== 0) {
+          amount = Math.abs(generic);
+          if (!txType) {
+            txType = generic >= 0 ? "income" : "expense";
+          }
+        }
+
+        if (!txType) {
+          const rawType = String(
+            getFirstDefined(row, ["type", "Type", "Transaction Type", "DrCr"]) || ""
+          ).toLowerCase();
+          if (["credit", "cr", "c"].includes(rawType)) txType = "income";
+          else if (["debit", "dr", "d"].includes(rawType)) txType = "expense";
+        }
+
+        if (!parsedDate || !amount || !txType) {
           failed++;
           continue;
         }
@@ -170,17 +353,18 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
         await ImportedTransactionModel.create({
           userId,
           date: parsedDate,
-          description: row.description || "",
-          amount: Number(String(row.amount).replace(/[₹,]/g, "")),
-          type: row.type,
-          category: detectCategory(row.description || ""),
+          description,
+          amount,
+          type: txType,
+          category: detectCategory(description || ""),
           source: batch.source,
           importBatchId: batch._id,
           rawRow: row,
         });
 
         success++;
-      } catch {
+      } catch (err) {
+        console.error("Failed to import row:", row, err);
         failed++;
       }
     }
@@ -199,13 +383,10 @@ router.post("/parse/:batchId", userAuth, async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: "Parse failed" });
+    res.status(500).json({ message: "Parse failed", error: err instanceof Error ? err.message : "" });
   }
 });
 
-/* =====================================================
-   LIST BATCHES
-===================================================== */
 router.get("/batches", userAuth, async (req, res) => {
   try {
     // @ts-ignore
@@ -220,15 +401,10 @@ router.get("/batches", userAuth, async (req, res) => {
     res.json({ batches });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Failed to fetch uploaded files",
-    });
+    res.status(500).json({ message: "Failed to fetch batches" });
   }
 });
 
-/* =====================================================
-   DELETE BATCH
-===================================================== */
 router.delete("/batch/:batchId", userAuth, async (req, res) => {
   try {
     const { batchId } = req.params;
@@ -250,7 +426,8 @@ router.delete("/batch/:batchId", userAuth, async (req, res) => {
       userId,
     });
 
-    const filePath = path.join("uploads", batch.fileName);
+    const uploadsDir = path.join(__dirname, "..", "..", "uploads");
+    const filePath = path.join(uploadsDir, batch.fileName);
     if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
     await batch.deleteOne();
@@ -258,9 +435,7 @@ router.delete("/batch/:batchId", userAuth, async (req, res) => {
     res.json({ message: "Uploaded file deleted successfully" });
   } catch (error) {
     console.error(error);
-    res.status(500).json({
-      message: "Failed to delete uploaded file",
-    });
+    res.status(500).json({ message: "Failed to delete batch" });
   }
 });
 

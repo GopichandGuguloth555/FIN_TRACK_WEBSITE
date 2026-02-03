@@ -6,10 +6,14 @@ import UploadStatementCard from "@/components/transactions/uploadFile";
 
 export default function Transactions() {
   const [showUpload, setShowUpload] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleUploadSuccess = () => {
+    setRefreshKey((k) => k + 1);
+  };
 
   return (
     <DashboardLayout>
-      {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Transactions</h1>
         <p className="text-neutral-400">
@@ -17,7 +21,6 @@ export default function Transactions() {
         </p>
       </div>
 
-      {/* Upload section */}
       {!showUpload ? (
         <button
           onClick={() => setShowUpload(true)}
@@ -32,14 +35,14 @@ export default function Transactions() {
           Upload Bank Statement
         </button>
       ) : (
-        <UploadStatementCard onClose={() => setShowUpload(false)} />
+        <UploadStatementCard
+          onClose={() => setShowUpload(false)}
+          onUploadSuccess={handleUploadSuccess}
+        />
       )}
 
-      {/* Filters */}
       <TransactionFilters />
-
-      {/* Table */}
-      <TransactionsTable />
+      <TransactionsTable refreshKey={refreshKey} />
     </DashboardLayout>
   );
 }

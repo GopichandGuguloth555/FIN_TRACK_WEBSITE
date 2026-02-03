@@ -1,4 +1,3 @@
-
 import express from "express";
 import { userAuth } from "../middlewares/auth";
 import { ImportedTransactionModel } from "../models/importTransaction";
@@ -10,9 +9,10 @@ router.get("/", userAuth, async (req, res) => {
     // @ts-ignore
     const userId = req.user.id;
 
+    const limit = Math.min(Math.max(parseInt(String(req.query.limit), 10) || 500, 1), 2000);
     const transactions = await ImportedTransactionModel.find({ userId })
       .sort({ date: -1 })
-      .limit(50);
+      .limit(limit);
 
     res.json({
       transactions,
