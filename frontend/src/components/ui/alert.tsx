@@ -1,4 +1,3 @@
-
 type AlertBoxProps = {
   message: string;
   type?: "success" | "error";
@@ -11,34 +10,36 @@ const AlertBox = ({
   onClose,
 }: AlertBoxProps) => {
   return (
-    <div
-      className={`
-        fixed top-6 right-6 z-50
-        min-w-[320px] max-w-[420px]
-        px-5 py-4
-        rounded-xl
-        border
-        backdrop-blur-md
-        shadow-2xl
-        text-sm text-white
-        flex items-start justify-between gap-4
-        ${
-          type === "success"
-            ? "bg-emerald-500/15 border-emerald-500/30"
-            : "bg-red-500/15 border-red-500/30"
-        }
-      `}
-    >
-      <span className="leading-relaxed">{message}</span>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
+      <div
+        className={`
+          min-w-[320px] max-w-[420px]
+          px-6 py-5
+          rounded-2xl
+          border
+          shadow-2xl
+          text-sm text-white
+          flex items-start justify-between gap-4
+          transform transition-all duration-300
+          animate-bounce
+          ${
+            type === "success"
+              ? "bg-emerald-500/20 border-emerald-500/40"
+              : "bg-red-500/20 border-red-500/40"
+          }
+        `}
+      >
+        <span className="leading-relaxed">{message}</span>
 
-      {onClose && (
-        <button
-          onClick={onClose}
-          className="text-white/60 hover:text-white text-lg leading-none"
-        >
-          ×
-        </button>
-      )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="ml-3 text-white/70 hover:text-white text-lg leading-none"
+          >
+            ×
+          </button>
+        )}
+      </div>
     </div>
   );
 };

@@ -1,9 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AlertBox from "@/components/ui/alert";
 import logo from "/logo.png";
+
+/* ---------- Google Icon (inline SVG) ---------- */
+const GoogleIcon = () => (
+  <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-white">
+    <svg viewBox="0 0 48 48" className="w-4 h-4">
+      <path
+        fill="#EA4335"
+        d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.84-6.84C35.9 2.98 30.47 1 24 1 14.73 1 6.72 6.16 3 14.04l7.98 6.2C12.35 14.83 17.64 9.5 24 9.5z"
+      />
+      <path
+        fill="#4285F4"
+        d="M46.5 24.5c0-1.62-.15-3.18-.44-4.68H24v9.09h12.7c-.55 2.96-2.23 5.48-4.76 7.17l7.43 5.78C43.9 38.16 46.5 31.83 46.5 24.5z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M10.98 28.24A14.5 14.5 0 0 1 10.5 24c0-1.48.24-2.9.67-4.24l-7.98-6.2C1.8 16.2 1 19.02 1 22c0 2.98.8 5.8 2.19 8.44l7.79-6.2z"
+      />
+      <path
+        fill="#34A853"
+        d="M24 47c6.48 0 11.93-2.13 15.9-5.81l-7.43-5.78C30.8 36.94 27.7 38 24 38c-6.36 0-11.65-4.33-13.55-10.26l-7.98 6.2C6.72 41.84 14.73 47 24 47z"
+      />
+      <path fill="none" d="M1 1h46v46H1z" />
+    </svg>
+  </span>
+);
 
 /* ---------- Input ---------- */
 const Input = ({
@@ -37,14 +62,11 @@ const Input = ({
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<any>(null);
-
-  /* 🔹 HANDLE GOOGLE REDIRECT TOKEN */
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/auth/google";
@@ -68,7 +90,7 @@ export default function LoginPage() {
         setAlert({ message: "Login successful", type: "success" });
         setTimeout(() => navigate("/dashboard"), 800);
       } else {
-        setAlert({ message: data.message, type: "error" });
+        setAlert({ message: data.message || "Login failed", type: "error" });
       }
     } catch {
       setAlert({ message: "Server error", type: "error" });
@@ -116,7 +138,8 @@ export default function LoginPage() {
                   transition
                 "
               >
-                Continue with Google
+                <GoogleIcon />
+                <span>Continue with Google</span>
               </button>
 
               <div className="flex items-center gap-3 my-2">
