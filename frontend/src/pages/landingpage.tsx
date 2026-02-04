@@ -139,6 +139,63 @@ export default function Landing() {
           </Link>
         </div>
       </section>
+
+            {/* FOOTER */}
+      <footer className="relative z-10 border-t border-white/10 bg-neutral-950">
+        <div className="max-w-6xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl text-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-black font-extrabold">
+                ₣
+              </div>
+              <span className="text-lg font-bold tracking-[0.2em]">
+                FIN<span className="text-emerald-400">TRACK</span>
+              </span>
+            </div>
+            <p className="mt-4 text-sm text-neutral-400 max-w-xs">
+              A simple and secure way to track your income, expenses,
+              and financial habits.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="text-neutral-300 font-medium mb-2">
+              Product
+            </span>
+            <Link to="/login" className="text-neutral-400 hover:text-white transition">
+              Login
+            </Link>
+            <Link to="/signup" className="text-neutral-400 hover:text-white transition">
+              Get Started
+            </Link>
+            <Link to="#" className="text-neutral-400 hover:text-white transition">
+              Features
+            </Link>
+          </div>
+
+          {/* Meta */}
+          <div className="flex flex-col gap-2 text-sm">
+            <span className="text-neutral-300 font-medium mb-2">
+              Legal
+            </span>
+            <Link to="#" className="text-neutral-400 hover:text-white transition">
+              Privacy Policy
+            </Link>
+            <Link to="#" className="text-neutral-400 hover:text-white transition">
+              Terms of Service
+            </Link>
+          </div>
+        </div>
+
+        {/* Bottom bar */}
+        <div className="border-t border-white/5 py-6 text-center text-xs text-neutral-500">
+          © {new Date().getFullYear()} FIN-TRACK. All rights reserved.
+        </div>
+      </footer>
+
     </div>
   );
 }
