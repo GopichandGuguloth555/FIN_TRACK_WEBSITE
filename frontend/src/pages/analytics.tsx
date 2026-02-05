@@ -1,4 +1,6 @@
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/dashboardLayout";
+import AlertBox from "@/components/ui/alert";
 import AnalyticsHeader from "@/components/analytics/analyticsHeader";
 import AnalyticsStats from "@/components/analytics/analyticsStats";
 import ExpenseTrendChart from "@/components/analytics/analyticsExpenseTrendChat";
@@ -7,8 +9,17 @@ import MonthlyYearlyExpenseBar from "@/components/analytics/monthlyYearlyExpense
 import MonthlyYearlyIncomeBar from "@/components/analytics/monthlyYearlyIncomeBar";
 
 export default function Analytics() {
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
   return (
     <DashboardLayout>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
       <AnalyticsHeader />
 
       <AnalyticsStats />

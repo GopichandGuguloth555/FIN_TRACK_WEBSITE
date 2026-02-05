@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
+import AlertBox from "@/components/ui/alert";
 import {
   IconArrowUpRight,
   IconArrowDownRight,
@@ -20,6 +21,7 @@ type Props = {
 export default function TransactionsTable({ refreshKey = 0 }: Props) {
   const [transactions, setTransactions] = useState<Tx[]>([]);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     const fetchTx = async () => {
@@ -32,8 +34,8 @@ export default function TransactionsTable({ refreshKey = 0 }: Props) {
           },
         });
         setTransactions(res.data.transactions || []);
-      } catch (err) {
-        console.error(err);
+      } catch {
+        setAlert({ message: "Failed to load transactions", type: "error" });
       } finally {
         setLoading(false);
       }
@@ -42,21 +44,26 @@ export default function TransactionsTable({ refreshKey = 0 }: Props) {
     fetchTx();
   }, [refreshKey]);
 
-  if (loading) {
-    return (
-      <div className="text-neutral-400 text-sm mt-6">
-        Loading transactions…
-      </div>
-    );
-  }
-
   return (
-    <div className="mt-8 max-w-8xl mx-auto">
+    <>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
+      <div className="mt-8 max-w-8xl mx-auto">
       <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 overflow-hidden shadow-lg">
         <div className="px-6 py-4 border-b border-white/10">
           <h2 className="text-lg font-semibold">Recent Transactions</h2>
         </div>
 
+        {loading ? (
+          <div className="px-6 py-12 text-center text-neutral-400 text-sm">
+            Loading transactions…
+          </div>
+        ) : (
         <table className="w-full text-sm">
           <thead className="text-neutral-400">
             <tr>
@@ -117,6 +124,7 @@ export default function TransactionsTable({ refreshKey = 0 }: Props) {
             ))}
           </tbody>
         </table>
+        )}
       </div>
 
       <style>{`
@@ -135,5 +143,6 @@ export default function TransactionsTable({ refreshKey = 0 }: Props) {
         }
       `}</style>
     </div>
+    </>
   );
 }

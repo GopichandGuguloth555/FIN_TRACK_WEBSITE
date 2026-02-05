@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
+import AlertBox from "@/components/ui/alert";
 import { useNavigate } from "react-router-dom";
 import {
   IconUser,
@@ -20,14 +21,19 @@ export default function ProfilePage() {
   const [userName, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const res = await axios.get("/user/profile");
-      setUserName(res.data.user.userName);
-      setEmail(res.data.user.email);
-      setLoading(false);
+      try {
+        const res = await axios.get("/user/profile");
+        setUserName(res.data.user.userName);
+        setEmail(res.data.user.email);
+      } catch {
+        setAlert({ message: "Failed to load profile", type: "error" });
+      } finally {
+        setLoading(false);
+      }
     };
     fetchProfile();
   }, []);
@@ -40,9 +46,9 @@ export default function ProfilePage() {
         ...(password && { password }),
       });
       setPassword("");
-      setMessage("Profile updated successfully");
+      setAlert({ message: "Profile updated successfully", type: "success" });
     } catch {
-      setMessage("Failed to update profile");
+      setAlert({ message: "Failed to update profile", type: "error" });
     } finally {
       setSaving(false);
     }
@@ -54,16 +60,15 @@ export default function ProfilePage() {
     navigate("/");
   };
 
-  if (loading) {
-    return (
-      <DashboardLayout>
-        <p className="text-neutral-400">Loading profile…</p>
-      </DashboardLayout>
-    );
-  }
-
   return (
     <DashboardLayout>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
       {/* HEADER */}
       <div className="mb-10">
         <h1 className="text-2xl font-semibold">Profile</h1>
@@ -79,12 +84,12 @@ export default function ProfilePage() {
           <div className="relative">
             <div className="absolute inset-0 rounded-full bg-emerald-500/30 blur-xl" />
             <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-3xl font-bold text-black">
-              {userName.charAt(0).toUpperCase()}
+              {(userName || "…").charAt(0).toUpperCase()}
             </div>
           </div>
 
-          <h2 className="mt-4 text-lg font-semibold">{userName}</h2>
-          <p className="text-sm text-neutral-400">{email}</p>
+          <h2 className="mt-4 text-lg font-semibold">{loading ? "…" : userName}</h2>
+          <p className="text-sm text-neutral-400">{loading ? "…" : email}</p>
 
           <button
             onClick={handleLogout}
@@ -117,6 +122,7 @@ export default function ProfilePage() {
                 <input
                   value={userName}
                   onChange={(e) => setUserName(e.target.value)}
+                  disabled={loading}
                   className="
                     w-full pl-9 rounded-xl px-4 py-2
                     bg-black/40 border border-white/10
@@ -173,15 +179,9 @@ export default function ProfilePage() {
           </div>
 
           <div className="mt-8 flex justify-between items-center">
-            {message && (
-              <span className="text-sm text-emerald-400">
-                {message}
-              </span>
-            )}
-
             <button
               onClick={handleSave}
-              disabled={saving}
+              disabled={saving || loading}
               className="
                 px-6 py-2 rounded-xl
                 bg-emerald-500 text-black font-medium

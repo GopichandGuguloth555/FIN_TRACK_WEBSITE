@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
+import AlertBox from "@/components/ui/alert";
 import {
   IconWallet,
   IconArrowUpRight,
@@ -22,29 +23,42 @@ type Summary = {
 export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [txCount, setTxCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
-      const token = localStorage.getItem("token");
-
-      const [summaryRes, txRes] = await Promise.all([
-        axios.get("/analytics/summary", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        axios.get("/transactions", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ]);
-
-      setSummary(summaryRes.data);
-      setTxCount(txRes.data.transactions.length);
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        const [summaryRes, txRes] = await Promise.all([
+          axios.get("/analytics/summary", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get("/transactions", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
+        setSummary(summaryRes.data);
+        setTxCount(txRes.data.transactions.length);
+      } catch {
+        setAlert({ message: "Failed to load dashboard data", type: "error" });
+      } finally {
+        setLoading(false);
+      }
     };
-
     fetchDashboardData();
   }, []);
 
   return (
     <DashboardLayout>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-semibold">Dashboard</h1>

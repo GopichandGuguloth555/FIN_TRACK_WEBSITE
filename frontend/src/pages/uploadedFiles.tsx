@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
+import AlertBox from "@/components/ui/alert";
 import { IconTrash } from "@tabler/icons-react";
 
 type Batch = {
@@ -22,12 +23,17 @@ export default function UploadedFiles() {
 
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const fetchBatches = async () => {
-    const res = await axios.get("/imports/batches");
-    setBatches(res.data.batches);
-    setLoading(false);
+    try {
+      const res = await axios.get("/imports/batches");
+      setBatches(res.data.batches);
+    } catch {
+      setAlert({ message: "Failed to load uploaded files", type: "error" });
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -40,26 +46,25 @@ export default function UploadedFiles() {
     try {
       setDeleting(true);
       await axios.delete(`/imports/batch/${deleteId}`);
-      setMessage("File deleted successfully");
+      setAlert({ message: "File deleted successfully", type: "success" });
       setDeleteId(null);
       fetchBatches();
     } catch {
-      setMessage("Failed to delete file");
+      setAlert({ message: "Failed to delete file", type: "error" });
     } finally {
       setDeleting(false);
-      setTimeout(() => setMessage(null), 2500);
     }
   };
 
   return (
     <DashboardLayout>
-      {/* TOAST MESSAGE */}
-      {message && (
-        <div className="fixed top-6 right-6 z-50 rounded-xl bg-black/80 border border-white/10 px-5 py-3 text-sm text-white">
-          {message}
-        </div>
+      {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
       )}
-
       {/* CONFIRM DELETE MODAL */}
       {deleteId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -102,7 +107,7 @@ export default function UploadedFiles() {
       </div>
 
       {loading ? (
-        <p className="text-neutral-400">Loading files…</p>
+        <p className="text-neutral-400 text-sm">Loading files…</p>
       ) : batches.length === 0 ? (
         <p className="text-neutral-400">No files uploaded yet.</p>
       ) : (

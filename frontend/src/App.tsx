@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./pages/landingpage";
 import { Login } from "./pages/login";
@@ -11,7 +12,11 @@ import SessionExpired from "./pages/sessionExpired";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AuthCallback from "./pages/authCallback";
 
-export default function App() {
+export default function App({ onReady }: { onReady?: () => void }) {
+  useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   return (
     <BrowserRouter>
       <Routes>

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AlertBox from "@/components/ui/alert";
+import PageLoader from "@/components/ui/PageLoader";
 import logo from "/logo.png";
 
 /* ---------- Google Icon (inline SVG) ---------- */
@@ -101,6 +102,7 @@ export default function LoginPage() {
 
   return (
     <>
+      {loading && <PageLoader />}
       {alert && (
         <AlertBox
           message={alert.message}
