@@ -37,6 +37,8 @@ export default function Landing() {
         </div>
       </nav>
 
+      
+
       {/* HERO + SHOWCASE (GROUPED) */}
       <section className="relative z-10 mt-24 px-6">
         <div className="max-w-6xl mx-auto text-center">

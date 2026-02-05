@@ -1,0 +1,11 @@
+title,amount,category,type,date
+Groceries,1200,Food,expense,2025-01-01
+Bus Ticket,50,Travel,expense,2025-01-02
+Mobile Recharge,299,Utilities,expense,2025-01-03
+Movie,350,Entertainment,expense,2025-01-04
+Salary,45000,Income,income,2025-01-05
+Freelance,8000,Income,income,2025-01-06
+Electricity Bill,900,Utilities,expense,2025-01-07
+Dining Out,600,Food,expense,2025-01-08
+Gym Fee,1200,Health,expense,2025-01-09
+Bonus,5000,Income,income,2025-01-10

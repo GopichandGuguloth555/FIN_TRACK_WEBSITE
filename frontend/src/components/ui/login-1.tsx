@@ -68,6 +68,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [alert, setAlert] = useState<any>(null);
+  const demoEmail = "demouser123@gmail.com";
+  const demoPassword = "demo@123";
 
   const handleGoogleLogin = () => {
     window.location.href = "http://localhost:5000/auth/google";
@@ -190,6 +192,29 @@ export default function LoginPage() {
             <div className="absolute inset-0 bg-emerald-950/30 mix-blend-overlay" />
             <div className="absolute inset-0 bg-black/50" />
           </div>
+        </div>
+
+        {/* DEMO CREDENTIALS POPUP */}
+        <div className="hidden md:flex flex-col gap-2 absolute top-1/2 right-10 -translate-y-1/2 w-[320px] rounded-2xl bg-black/80 border border-emerald-500/50 px-5 py-4 text-sm text-neutral-200 shadow-2xl">
+          <p className="font-semibold text-emerald-400 mb-1">
+            Demo account
+          </p>
+          <p>
+            <span className="text-neutral-400">Email:</span> {demoEmail}
+          </p>
+          <p>
+            <span className="text-neutral-400">Password:</span> {demoPassword}
+          </p>
+          <button
+            type="button"
+            onClick={() => {
+              setEmail(demoEmail);
+              setPassword(demoPassword);
+            }}
+            className="mt-2 inline-flex items-center gap-1 rounded-md bg-emerald-500/10 px-2 py-1 text-[11px] text-emerald-300 hover:bg-emerald-500/20"
+          >
+            Use demo credentials
+          </button>
         </div>
       </div>
     </>
