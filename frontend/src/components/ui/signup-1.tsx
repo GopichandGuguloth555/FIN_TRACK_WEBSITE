@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import AlertBox from "@/components/ui/alert";
 import PageLoader from "@/components/ui/PageLoader";
 import logo from "/logo.png";
+import { API_BASE_URL } from "@/utils/constants";
+
 
 /* ---------- Google Icon (same as login) ---------- */
 const GoogleIcon = () => (
@@ -73,7 +75,7 @@ export default function SignupPage() {
   const demoPassword = "demo@123";
 
   const handleGoogleSignup = () => {
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = `${API_BASE_URL}/auth/google`;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -81,7 +83,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/user/signup", {
+      const res = await fetch(`${API_BASE_URL}/user/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userName, email, password }),
