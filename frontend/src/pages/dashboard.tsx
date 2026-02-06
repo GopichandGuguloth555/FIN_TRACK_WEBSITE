@@ -23,7 +23,7 @@ type Summary = {
 export default function Dashboard() {
   const [summary, setSummary] = useState<Summary | null>(null);
   const [txCount, setTxCount] = useState(0);
-  const [loading, setLoading] = useState(true);
+  const [,setLoading] = useState(true);
   const [alert, setAlert] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   useEffect(() => {
