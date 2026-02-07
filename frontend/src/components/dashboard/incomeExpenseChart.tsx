@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 import axios from "@/api/axios";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
+import {BarChart, Bar,XAxis,Tooltip,ResponsiveContainer,} from "recharts";
+import PageLoader from "../ui/PageLoader";
+import AlertBox from "../ui/alert";
+
+
+
+const [loading, setLoading] = useState(false);
+const [alert, setAlert] = useState<any>(null);
 
 /* ---------- Custom Tooltip ---------- */
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -25,6 +26,9 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function IncomeExpenseBarChart() {
+
+    setLoading(true);
+
   const [data, setData] = useState<any[]>([]);
 
   useEffect(() => {
@@ -40,13 +44,24 @@ export default function IncomeExpenseBarChart() {
           month: d.month,
           value: d.income,
         }))
+      
       );
+      setLoading(false);
     };
 
     fetchMonthly();
   }, []);
 
   return (
+   <>
+   {loading && <PageLoader/>}
+    {alert && (
+        <AlertBox
+          message={alert.message}
+          type={alert.type}
+          onClose={() => setAlert(null)}
+        />
+      )}
     <div className="rounded-2xl bg-white/10 backdrop-blur-xl border border-white/10 p-6">
       <h3 className="text-sm font-medium text-neutral-300 mb-4">
         Income Overview
@@ -84,5 +99,6 @@ export default function IncomeExpenseBarChart() {
         </ResponsiveContainer>
       </div>
     </div>
+   </>
   );
 }
