@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import axios from "@/api/axios";
 import DashboardLayout from "@/components/layout/dashboardLayout";
 import AlertBox from "@/components/ui/alert";
-import {
-  IconWallet,
-  IconArrowUpRight,
-  IconArrowDownRight,
-  IconReceipt,
-} from "@tabler/icons-react";
+import {IconWallet,IconArrowUpRight,IconArrowDownRight,IconReceipt,} from "@tabler/icons-react";
 import RecentTransactions from "@/components/dashboard/recentTransaction";
 import IncomeExpenseChart from "@/components/dashboard/incomeExpenseChart";
 import IncomeExpenseRings from "@/components/dashboard/expenseRingChart";
