@@ -5,10 +5,12 @@ import { UserModel } from "../models/User";
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET as string;
-const FRONTEND_URL = process.env.FRONTEND_URL as string;
+const JWT_SECRET = process.env.JWT_SECRET!;
+const FRONTEND_URL = process.env.FRONTEND_URL!;
 
-// STEP 1: Redirect to Google
+/**
+ * STEP 1: Redirect user to Google
+ */
 router.get(
   "/google",
   passport.authenticate("google", {
@@ -16,7 +18,9 @@ router.get(
   })
 );
 
-// STEP 2: Google Callback
+/**
+ * STEP 2: Google callback
+ */
 router.get(
   "/google/callback",
   passport.authenticate("google", {
@@ -36,7 +40,6 @@ router.get(
         return res.redirect(`${FRONTEND_URL}/login`);
       }
 
-   
       let user = await UserModel.findOne({ email });
 
       if (user) {
@@ -56,17 +59,17 @@ router.get(
         });
       }
 
-     
+      // ✅ Create JWT (longer expiry)
       const token = jwt.sign(
         { id: user._id, email: user.email },
         JWT_SECRET,
-        { expiresIn: "1h" }
+        { expiresIn: "7d" }
       );
 
-    
-      res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}`);
-    } catch (err) {
-      console.error("Google auth error:", err);
+      // ✅ Redirect directly to dashboard
+      res.redirect(`${FRONTEND_URL}/dashboard?token=${token}`);
+    } catch (error) {
+      console.error("Google auth error:", error);
       res.redirect(`${FRONTEND_URL}/login`);
     }
   }
