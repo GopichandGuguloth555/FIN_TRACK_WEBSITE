@@ -20,4 +20,5 @@ export default function AuthCallback() {
   }, [navigate, params]);
 
   return <PageLoader />;
+  
 }
