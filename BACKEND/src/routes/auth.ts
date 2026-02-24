@@ -67,7 +67,7 @@ router.get(
       );
 
       // ✅ Redirect directly to dashboard
-      res.redirect(`${FRONTEND_URL}/dashboard?token=${token}`);
+      res.redirect(`${FRONTEND_URL}/auth/callback?token=${token}`);
     } catch (error) {
       console.error("Google auth error:", error);
       res.redirect(`${FRONTEND_URL}/login`);
