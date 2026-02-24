@@ -1,6 +1,8 @@
+import dotenv from "dotenv";
+dotenv.config();  
+
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import passport from "./config/passport";
 
 import { connectDB } from "./db";
@@ -9,8 +11,6 @@ import importsRoutes from "./routes/import";
 import analytics from "./routes/analysis";
 import transactions from "./routes/transaction";
 import authRoutes from "./routes/auth";
-
-dotenv.config();
 
 const PORT = Number(process.env.PORT) || 5000;
 const app = express();
